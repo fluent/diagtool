@@ -6,27 +6,6 @@ require '../lib/maskutils'
 module Diagtool
     class Diagutils
 	    include Maskutils
-	    def initialize_default(exlist)
-		    @time = Time.new
-		    @time_format = @time.strftime("%Y%m%d%k%M")
-		    @output_dir = './output'
-		    @workdir = @output_dir+'/'+@time_format
-		    @def_tdconf_path = '/etc/td-agent/'
-		    @def_tdconf = 'td-agent.conf'
-		    @def_tdlog_path = '/var/log/td-agent/'
-		    @def_tdlog = 'td-agent.log'
-		    @oslog_path = '/var/log/'	# As of Centos8.1
-		    @oslog = 'messages'		# As of Centos8.1
-		    @sysctl_path = '/etc/'       	# As of Centos8.1
-		    @sysctl = 'sysctl.conf'		# As of Centos8.1
-		    
-		    @tdconf_path = @def_tdconf_path
-		    @tdconf = @def_tdconf
-		    @tdlog_path = @def_tdlog_path
-		    @tdlog = @def_tdlog	
-		    exclude_list = exlist
-		    load_exlist(exclude_list)
-	    end
 	    def initialize(output_dir, exlist, loglevel)
 		    @logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
   			"#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
