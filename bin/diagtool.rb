@@ -68,7 +68,7 @@ logger.info("ulimit information is stored in #{ulimit}")
 
 if mask == 'yes'
 	logger.info("Masking td-agent config file : #{tdconf}...")
-	node1.mask_tdconf(tdconf)
+	node1.mask_tdlog(tdconf)
 	tdlog.each do | file |
 		logger.info("Masking td-agent log file : #{file}...")
       		filename = file.split("/")[-1]
