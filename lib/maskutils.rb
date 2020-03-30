@@ -1,27 +1,29 @@
 require 'digest'
+require 'fileutils'
 
 module Diagtool
     module Maskutils
-	    def mask_tdconf_inspector(line)
-		    i = 0
-		    contents=[]
-		    loop do
-			    contents[i] = line.split()[i].to_s
-			    if mask_ipv4_fqdn_exlist(contents[i])[0]
-				    if contents[i].include?(">")
-					    contents[i] = contents[i].gsub(">",'')
-					    contents[i] = mask_ipv4_fqdn_exlist(contents[i])[1]
-					    contents[i] << ">"
-				    else
-					    contents[i] = mask_ipv4_fqdn_exlist(contents[i])[1]
-				    end
-			    end
-			    i+=1
-			    break if i >= line.split().length
-		    end
-		    line_mask = contents.join(' ')
-		    return line_mask
-	    end
+	    def mask_tdlog(input_file)
+                    f = File.open(input_file+'.mask', 'w')
+                    File.readlines(input_file).each do |line|
+                            line_masked = mask_tdlog_inspector(line)
+                            f.puts(line_masked)
+                    end
+                    f.close
+                    FileUtils.rm(input_file)
+            end
+            def mask_tdlog_gz(input_file)
+                    f = File.open(input_file+'.mask', 'w')
+                    gunzip_file = input_file+'.mask'+'.tmp'
+                    Open3.capture3("gunzip --keep -c #{input_file} > #{gunzip_file}")
+                    File.readlines(gunzip_file).each do |line|
+                            line_masked = mask_tdlog_inspector(line)
+                            f.puts(line_masked)
+                    end
+                    f.close
+                    FileUtils.rm(gunzip_file)
+                    FileUtils.rm(input_file)
+            end
 	    def mask_tdlog_inspector(line)
 		    i = 0
 		    contents=[]

@@ -82,36 +82,6 @@ module Diagtool
 		    end
 		    return @workdir+'/ntp_info.output'
 	    end
-	    def mask_tdconf(input_file)
-		    f = File.open(input_file+'.mask', 'w')
-		    File.readlines(input_file).each do |line|
-			    line_masked = mask_tdconf_inspector(line)
-			    f.puts(line_masked)
-		    end
-		    f.close
-		    FileUtils.rm(input_file)
-	    end
-	    def mask_tdlog(input_file)
-		    f = File.open(input_file+'.mask', 'w')
-		    File.readlines(input_file).each do |line|
-			    line_masked = mask_tdlog_inspector(line)
-			    f.puts(line_masked)
-		    end
-		    f.close
-		    FileUtils.rm(input_file)
-	    end
-	    def mask_tdlog_gz(input_file)
-		    f = File.open(input_file+'.mask', 'w')
-		    gunzip_file = input_file+'.mask'+'.tmp'
-		    Open3.capture3("gunzip --keep -c #{input_file} > #{gunzip_file}")
-		    File.readlines(gunzip_file).each do |line|
-			    line_masked = mask_tdlog_inspector(line)
-			    f.puts(line_masked)
-		    end
-		    f.close
-		    FileUtils.rm(gunzip_file)
-		    FileUtils.rm(input_file)
-	    end
 	    def compress_output()
 		    tar_file = @output_dir+'/diagout-'+@time_format+'.tar.gz'
 		    stdout, stderr, status = Open3.capture3("tar cvfz #{tar_file} #{@workdir}")
