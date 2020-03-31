@@ -68,14 +68,14 @@ logger.info("ulimit information is stored in #{ulimit}")
 
 if mask == 'yes'
 	logger.info("Masking td-agent config file : #{tdconf}...")
-	node1.mask_tdlog(tdconf)
+	node1.mask_tdlog(tdconf, clean = true)
 	tdlog.each do | file |
 		logger.info("Masking td-agent log file : #{file}...")
       		filename = file.split("/")[-1]
 		if filename.include?(".gz")
-               		node1.mask_tdlog_gz(file)
+               		node1.mask_tdlog_gz(file, clean = true)
        		elsif
-               		node1.mask_tdlog(file)
+               		node1.mask_tdlog(file, clean = true)
        		end
 	end
 end

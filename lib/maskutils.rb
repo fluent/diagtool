@@ -1,18 +1,19 @@
 require 'digest'
 require 'fileutils'
+require 'open3'
 
 module Diagtool
     module Maskutils
-	    def mask_tdlog(input_file)
+	    def mask_tdlog(input_file, clean)
                     f = File.open(input_file+'.mask', 'w')
                     File.readlines(input_file).each do |line|
                             line_masked = mask_tdlog_inspector(line)
                             f.puts(line_masked)
                     end
                     f.close
-                    FileUtils.rm(input_file)
+                    FileUtils.rm(input_file) if clean = true
             end
-            def mask_tdlog_gz(input_file)
+            def mask_tdlog_gz(input_file, clean)
                     f = File.open(input_file+'.mask', 'w')
                     gunzip_file = input_file+'.mask'+'.tmp'
                     Open3.capture3("gunzip --keep -c #{input_file} > #{gunzip_file}")
@@ -22,7 +23,7 @@ module Diagtool
                     end
                     f.close
                     FileUtils.rm(gunzip_file)
-                    FileUtils.rm(input_file)
+                    FileUtils.rm(input_file) if clean == true
             end
 	    def mask_tdlog_inspector(line)
 		    i = 0
