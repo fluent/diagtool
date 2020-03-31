@@ -54,7 +54,7 @@ load_exlist(exlist)
 logger.info("Masking td-agent log file : #{input_file}...")
 case File.extname(input_file)
 when ".gz"
-        mask_tdlog_gz(input_file)
+        mask_tdlog_gz(input_file, clean = false)
 else
-        mask_tdlog(input_file)
+        mask_tdlog(input_file, clean = false)
 end
