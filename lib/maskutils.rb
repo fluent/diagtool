@@ -1,9 +1,16 @@
 require 'digest'
 require 'fileutils'
+require 'logger'
 require 'open3'
 
 module Diagtool
-    module Maskutils
+    class Maskutils
+	    def initialize(exlist, log_level)
+		    load_exlist(exlist)
+		    @logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
+                        "#{datetime}: [Maskutils] [#{severity}] #{msg}\n"
+                    })
+	    end
 	    def mask_tdlog(input_file, clean)
                     f = File.open(input_file+'.mask', 'w')
                     File.readlines(input_file).each do |line|
@@ -11,7 +18,7 @@ module Diagtool
                             f.puts(line_masked)
                     end
                     f.close
-                    FileUtils.rm(input_file) if clean = true
+                    FileUtils.rm(input_file) if clean == true
             end
             def mask_tdlog_gz(input_file, clean)
                     f = File.open(input_file+'.mask', 'w')
@@ -30,7 +37,9 @@ module Diagtool
 		    contents=[]
 		    loop do
 			    contents[i] = line.split()[i].to_s
+			    @logger.debug("Splitted Line : #{contents[i]}")
 			    if mask_ipv4_fqdn_exlist(contents[i])[0]
+				    @logger.debug("Direct Match Pattern Detected: #{contents[i]}")
 				    if contents[i].include?(">")
 					    contents[i] = contents[i].gsub(">",'')
 					    contents[i] = mask_ipv4_fqdn_exlist(contents[i])[1]
@@ -40,24 +49,51 @@ module Diagtool
 				    end
 			    end
 			    if contents[i].include?('://') ## Mask <http/dRuby>://<address:ip/hostname>:<port>
-				    if contents[i].include?('=') ## Mask url=<http/dRuby>://<address:ip/hostname>:<port>
-					    l = contents[i].split('=')
-					    url = l[1].split(':')
-					    address = url[1].split('://')
-					    url[1] = '//' + mask_ipv4_fqdn_exlist(address[0])[1]
-					    l[1] = url.join(':')
-					    contents[i] = l.join('=')
-				    else ## Mask <http/dRuby>://<address:ip/hostname>:<port>
-					    url = contents[i].split(':')
-					    address = url[1].split('://')
-					    url[1] = '//' + mask_ipv4_fqdn_exlist(address[0])[1]
-					    contents[i] = url.join(':')
+				    @logger.debug("URL Pattern Detected: #{contents[i]}")
+				    url = contents[i].split('://')
+				    cnt_url = 0
+				    loop do
+					if url[cnt_url].include?(':')
+						address = url[cnt_url].split(':')
+						cnt_address = 0
+						loop do
+							if address[cnt_address].include?("]")
+								address[cnt_address] = mask_ipv4_fqdn_exlist(address[cnt_address].gsub(']',''))[1]
+								address[cnt_address] << "]"
+							elsif address[cnt_address].include?(">")
+								address[cnt_address] = mask_ipv4_fqdn_exlist(address[cnt_address].gsub('>',''))[1]
+								address[cnt_address] << ">"
+							else
+								address[cnt_address] = mask_ipv4_fqdn_exlist(address[cnt_address])[1]
+							end
+							cnt_address+=1
+                            				break if cnt_address >= address.length
+						end
+						url[cnt_url] = address.join(':')
+					else
+                                                if url[cnt_url].include?("]")
+                                                                url[cnt_url] = mask_ipv4_fqdn_exlist(url[cnt_url].gsub(']',''))[1]
+                                                                url[cnt_url] << "]"
+                                                        elsif url[cnt_url].include?(">")
+                                                                url[cnt_url] = mask_ipv4_fqdn_exlist(url[cnt_url].gsub('>',''))[1]
+                                                                url[cnt_url] << ">"
+                                                        else
+                                                                url[cnt_url] = mask_ipv4_fqdn_exlist(url[cnt_url])[1]
+                                                end
+					end
+				    	cnt_url+=1
+                                    	break if cnt_url >= url.length
 				    end
+				    @logger.debug("url = #{url}")
+				    contents[i] = url.join('://')
+			 	    @logger.debug("url = #{url}")
 			    elsif contents[i].include?('=')
+				    @logger.debug("Equal Pattern Detected: #{contents[i]}")
 				    l = contents[i].split('=') ## Mask host=<address:ip/hostname> or bind=<address: ip/hostname>
 				    l[1] = mask_ipv4_fqdn_exlist(l[1])[1] 
 				    contents[i] = l.join('=')
 			    elsif contents[i].include?(':') ## Mask <address:ip/hostname>:<port>
+				    @logger.debug("Colon Pattern Detected: #{contents[i]}")
 				    l = contents[i].split(':')
 				    l[0] = mask_ipv4_fqdn_exlist(l[0])[1]
 				    l[0] << ":" if l.length ==1	

@@ -1,6 +1,7 @@
 require 'optparse'
 require 'logger'
 require '../lib/diagutils'
+require '../lib/maskutils'
 include Diagtool
 
 logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
@@ -44,7 +45,7 @@ logger.info("   Option : Mask = #{mask}")
 logger.info("   Option : Exclude list = #{exlist}")
 
 logger.info("Initializing parameters...")
-node1 = Diagutils.new(output_dir,exlist, 'INFO')
+node1 = Diagutils.new(output_dir, 'INFO')
 
 logger.info("Collecting log files of td-agent...")
 tdlog = node1.collect_tdlog()
@@ -67,15 +68,16 @@ ulimit = node1.collect_ulimit()
 logger.info("ulimit information is stored in #{ulimit}")
 
 if mask == 'yes'
+	mask1 = Maskutils.new(exlist, 'INFO')
 	logger.info("Masking td-agent config file : #{tdconf}...")
-	node1.mask_tdlog(tdconf, clean = true)
+	mask1.mask_tdlog(tdconf, clean = true)
 	tdlog.each do | file |
 		logger.info("Masking td-agent log file : #{file}...")
       		filename = file.split("/")[-1]
 		if filename.include?(".gz")
-               		node1.mask_tdlog_gz(file, clean = true)
+               		mask1.mask_tdlog_gz(file, clean = true)
        		elsif
-               		node1.mask_tdlog(file, clean = true)
+               		mask1.mask_tdlog(file, clean = true)
        		end
 	end
 end

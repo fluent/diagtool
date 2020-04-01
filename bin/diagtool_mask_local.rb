@@ -3,7 +3,6 @@ require 'logger'
 require '../lib/maskutils'
 
 include Diagtool
-include Maskutils
 
 logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
   "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
@@ -50,11 +49,11 @@ logger.info("   Option : Input file = #{input_file}")
 logger.info("   Option : Mask = #{mask}")
 logger.info("   Option : Exclude list = #{exlist}")
 
-load_exlist(exlist)
+mask1 = Maskutils.new(exlist, 'INFO')
 logger.info("Masking td-agent log file : #{input_file}...")
 case File.extname(input_file)
 when ".gz"
-        mask_tdlog_gz(input_file, clean = false)
+        mask1.mask_tdlog_gz(input_file, clean = false)
 else
-        mask_tdlog(input_file, clean = false)
+        mask1.mask_tdlog(input_file, clean = false)
 end

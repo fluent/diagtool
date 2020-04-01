@@ -1,13 +1,11 @@
 require 'fileutils'
 require 'open3'
 require 'logger'
-require '../lib/maskutils'
 
 module Diagtool
     class Diagutils
-	    include Maskutils
-	    def initialize(output_dir, exlist, loglevel)
-		    @logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
+	    def initialize(output_dir, log_level)
+		    @logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
   			"#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
 		    })
 		    @time = Time.new
@@ -24,8 +22,6 @@ module Diagtool
 		    @oslog = 'messages'             # As of Centos8.1
 		    @sysctl_path = '/etc/'          # As of Centos8.1
 		    @sysctl = 'sysctl.conf'         # As of Centos8.1	
-		    @exclude_list = exlist
-		    load_exlist(@exclude_list)
 
 		    @logger.info("Loading the environment parameters...")
 		    @logger.info("    td-agent conf path = #{@tdconf_path}")
