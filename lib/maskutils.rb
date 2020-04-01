@@ -84,9 +84,7 @@ module Diagtool
 				    	cnt_url+=1
                                     	break if cnt_url >= url.length
 				    end
-				    @logger.debug("url = #{url}")
 				    contents[i] = url.join('://')
-			 	    @logger.debug("url = #{url}")
 			    elsif contents[i].include?('=')
 				    @logger.debug("Equal Pattern Detected: #{contents[i]}")
 				    l = contents[i].split('=') ## Mask host=<address:ip/hostname> or bind=<address: ip/hostname>
