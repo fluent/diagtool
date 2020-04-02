@@ -68,7 +68,7 @@ ulimit = node1.collect_ulimit()
 logger.info("ulimit information is stored in #{ulimit}")
 
 if mask == 'yes'
-	mask1 = Maskutils.new(exlist, 'INFO')
+	mask1 = Maskutils.new(exlist, 'DEBUG')
 	logger.info("Masking td-agent config file : #{tdconf}...")
 	mask1.mask_tdlog(tdconf, clean = true)
 	tdlog.each do | file |
