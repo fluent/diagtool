@@ -7,7 +7,7 @@ include Diagtool
 logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
   "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
 })
-
+log_level = 'DEBUG'
 input_file = ''
 mask = 'yes'
 exlist= Array.new
@@ -49,7 +49,7 @@ logger.info("   Option : Input file = #{input_file}")
 logger.info("   Option : Mask = #{mask}")
 logger.info("   Option : Exclude list = #{exlist}")
 
-mask1 = Maskutils.new(exlist, 'INFO')
+mask1 = Maskutils.new(exlist, log_level)
 logger.info("Masking td-agent log file : #{input_file}...")
 case File.extname(input_file)
 when ".gz"

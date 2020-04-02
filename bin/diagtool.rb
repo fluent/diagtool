@@ -2,6 +2,7 @@ require 'optparse'
 require 'logger'
 require '../lib/diagutils'
 require '../lib/maskutils'
+require '../lib/validutils'
 include Diagtool
 
 logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
@@ -46,6 +47,8 @@ logger.info("   Option : Exclude list = #{exlist}")
 
 logger.info("Initializing parameters...")
 node1 = Diagutils.new(output_dir, 'INFO')
+mask1 = Maskutils.new(exlist, 'INFO')
+valid1 = Validutils.new('INFO')
 
 logger.info("Collecting log files of td-agent...")
 tdlog = node1.collect_tdlog()
@@ -55,20 +58,25 @@ logger.info("Collecting config file of td-agent...")
 tdconf = node1.collect_tdconf()
 logger.info("config file is stored in #{tdconf}")
 
+logger.info("Collecting date/time information...")
+ntp = node1.collect_ntp(command="chrony")
+logger.info("date/time information is stored in #{ntp}")
+
 logger.info("Collecting systctl information...")
 sysctl = node1.collect_sysctl()
 logger.info("sysctl information is stored in #{sysctl}")
 
-logger.info("Collecting date/time information...")
-ntp = node1.collect_ntp()
-logger.info("date/time information is stored in #{ntp}")
+logger.info("Validating systctl information...")
+valid1.valid_sysctl(sysctl)
 
 logger.info("Collecting ulimit information...")
 ulimit = node1.collect_ulimit()
 logger.info("ulimit information is stored in #{ulimit}")
 
+logger.info("Validating ulimit information...")
+valid1.valid_ulimit(ulimit)
+
 if mask == 'yes'
-	mask1 = Maskutils.new(exlist, 'DEBUG')
 	logger.info("Masking td-agent config file : #{tdconf}...")
 	mask1.mask_tdlog(tdconf, clean = true)
 	tdlog.each do | file |
