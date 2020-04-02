@@ -9,7 +9,7 @@ module Diagtool
   			"#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
 		    })
 		    @time = Time.new
-		    @time_format = @time.strftime("%Y%m%d%0k%M")
+		    @time_format = @time.strftime("%Y%m%d%0k%M%0S")
 		    @output_dir = output_dir
 		    @workdir = @output_dir+'/'+@time_format
 		    FileUtils.mkdir_p(@workdir)
@@ -69,9 +69,10 @@ module Diagtool
 		    end
 		    return @workdir+'/ulimit_info.output'
 	    end
-	    def collect_ntp()
+	    def collect_ntp(command)
 		    stdout_date, stderr_date, status_date = Open3.capture3("date")
-		    stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources")
+		    stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources") if command == "chrony"
+		    stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("ntpq -p") if command == "ntp"
 		    File.open(@workdir+'/ntp_info.output', 'w') do |f|
 			    f.puts(stdout_date)
 			    f.puts(stdout_ntp)

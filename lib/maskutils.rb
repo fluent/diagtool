@@ -36,41 +36,58 @@ module Diagtool
 		    return input_file+'.mask'
             end
 	    def mask_tdlog_inspector(line)
-		    i = 0
-		    contents=[]
-		    @logger.debug("Input Line: #{line.chomp}")
-		    @logger.debug("Splitted Line: #{line.split(/\,|\s/)}")
-		    loop do
-			    contents[i] = line.split(/\,|\s/)[i].to_s
-			    @logger.debug("Splitted Line #{i}: #{contents[i]}")
-			    #if mask_ipv4_fqdn_exlist(contents[i])[0]
-			    #	    @logger.debug("   Direct Pattern Detected: #{contents[i]}")
-			    #	    contents[i] = mask_direct_pattern(contents[i])
-			    #	    @logger.debug("   Direct Pattern Masked: #{contents[i]}")
-			    #end
-			    if contents[i].include?('://') ## Mask <http/dRuby>://<address:ip/hostname>:<port>
-				    @logger.debug("   URL Pattern Detected: #{contents[i]}")
-				    contents[i] = mask_url_pattern(contents[i])
-				    @logger.debug("   URL Pattern Masked: #{contents[i]}")
-			    elsif contents[i].include?('=')
-				    @logger.debug("   Equal Pattern Detected: #{contents[i]}")
-				    contents[i] = mask_equal_pattern(contents[i])
-				    @logger.debug("   Equal Pattern Masked: #{contents[i]}")
-			    elsif contents[i].include?(':') ## Mask <address:ip/hostname>:<port>
-				    @logger.debug("   Colon Pattern Detected: #{contents[i]}")
-				    contents[i] = mask_colon_pattern(contents[i])
-				    @logger.debug("   Colon Pattern Masked: #{contents[i]}")
-			    elsif mask_ipv4_fqdn_exlist(contents[i])[0]
-				    @logger.debug("   Direct Pattern Detected: #{contents[i]}")
-                                    contents[i] = mask_direct_pattern(contents[i])
-                                    @logger.debug("   Direct Pattern Masked: #{contents[i]}")
-			    end
-			    i+=1
-			    break if i >= line.split(/\,|\s/).length
-		    end
-		    line_masked = contents.join(' ')
-		    @logger.debug("Masked Line: #{line_masked}")
-		    return line_masked
+		i = 0
+		contents=[]
+		@logger.debug("Input Line: #{line.chomp}")
+		@logger.debug("Splitted Line: #{line.split(/\s/)}")
+		loop do
+			contents[i] = line.split(/\s/)[i].to_s
+			@logger.debug("Splitted Line #{i}: #{contents[i]}")
+			if contents[i].include?(',')
+				contents_s = contents[i].split(',')
+				cnt = 0
+				loop do
+					if contents_s[cnt].include?('://') ## Mask <http/dRuby>://<address:ip/hostname>:<port>
+                                        	@logger.debug("   URL Pattern Detected: #{contents_s[cnt]} -> #{mask_url_pattern(contents_s[cnt])}")
+                                        	contents_s[cnt] = mask_url_pattern(contents_s[cnt])
+                                	elsif contents_s[cnt].include?('=')
+                                        	@logger.debug("   Equal Pattern Detected: #{contents_s[cnt]} -> #{mask_equal_pattern(contents_s[cnt])}")
+                                        	contents_s[cnt] = mask_equal_pattern(contents_s[cnt])
+                                	elsif contents_s[cnt].include?(':') ## Mask <address:ip/hostname>:<port>
+                                        	@logger.debug("   Colon Pattern Detected: #{contents_s[cnt]} -> #{mask_colon_pattern(contents_s[cnt])}")
+                                        	contents_s[cnt] = mask_colon_pattern(contents_s[cnt])
+                                	elsif mask_ipv4_fqdn_exlist(contents_s[cnt])[0]
+                                        	@logger.debug("   Direct Pattern Detected: #{contents_s[cnt]} -> #{mask_direct_pattern(contents_s[cnt])}")
+                                        	contents_s[cnt] = mask_direct_pattern(contents_s[cnt])
+					end
+					cnt+=1
+					break if cnt >= contents_s.length 
+				end
+				contents[i] = contents_s.join(',')
+			else
+				if contents[i].include?('://') ## Mask <http/dRuby>://<address:ip/hostname>:<port>
+					@logger.debug("   URL Pattern Detected: #{contents[i]} -> #{mask_url_pattern(contents[i])}")
+					contents[i] = mask_url_pattern(contents[i])
+				elsif contents[i].include?('=')
+					@logger.debug("   Equal Pattern Detected: #{contents[i]} -> #{mask_equal_pattern(contents[i])}")
+					contents[i] = mask_equal_pattern(contents[i])
+				elsif contents[i].include?(':') ## Mask <address:ip/hostname>:<port>
+					@logger.debug("   Colon Pattern Detected: #{contents[i]} -> #{mask_colon_pattern(contents[i])}")
+					contents[i] = mask_colon_pattern(contents[i])
+				elsif contents[i].include?(',')
+					str = contents[i].split(',')
+					p str   
+				elsif mask_ipv4_fqdn_exlist(contents[i])[0]
+					@logger.debug("   Direct Pattern Detected: #{contents[i]} -> #{mask_direct_pattern(contents[i])}")
+                       			contents[i] = mask_direct_pattern(contents[i])
+				end
+			end
+			i+=1
+			break if i >= line.split(/\,|\s/).length
+		end
+		line_masked = contents.join(' ')
+		@logger.debug("Masked Line: #{line_masked}")
+		return line_masked
 	    end
 	    def mask_direct_pattern(str)
 		if str.include?(">")
@@ -129,10 +146,19 @@ module Diagtool
                 return l.join('=')
 	    end
 	    def mask_colon_pattern(str)
+		end_with_collon = true if str.end_with?(':')
 		l = str.split(':')
-		l[0] = mask_ipv4_fqdn_exlist(l[0])[1]
-		l[0] << ":" if l.length ==1
-                return l.join(':')
+		i = 0
+		loop do
+			l[i] = mask_ipv4_fqdn_exlist(l[i])[1]
+			i+=1
+			break if i >= l.length
+		end
+		str_m = l.join(':')
+		if end_with_collon
+			str_m << ":"
+		end
+                return str_m
 	    end	
 	    def is_ipv4?(str)
 		!!(str =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)
