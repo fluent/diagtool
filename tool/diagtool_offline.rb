@@ -45,12 +45,14 @@ opt.on('-f','--exclude-file FILE', String, 'provide a file which describes a Lis
 }
 opt.parse(ARGV)
 exlist = exlist.uniq
+hash_seed = 'test'
+masklog = '/root/work/mask.log'
 
 logger.info("Parsing command options...")
 logger.info("   Option : Input file = #{input_file}")
 logger.info("   Option : Mask = #{mask}")
 logger.info("   Option : Exclude list = #{exlist}")
-mask1 = Maskutils.new(exlist, log_level)
+mask1 = Maskutils.new(exlist, hash_seed, log_level)
 
 if input_file.nil?
 	logger.info("Masking td-agent log file : #{input_file}...")
@@ -72,5 +74,5 @@ else
         	end 
 	}
 end
-
+mask1.export_masklog(masklog)
 

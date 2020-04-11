@@ -37,8 +37,11 @@ opt.on('-f','--exclude-file FILE', String, 'provide a file which describes a Lis
 		exit!
 	end
 }
+
 opt.parse(ARGV)
 exlist = exlist.uniq
+hash_seed = 'demo2'
+masklog = './mask.log'
 
 logger.info("Parsing command options...")
 logger.info("   Option : Output directory = #{output_dir}")
@@ -47,7 +50,7 @@ logger.info("   Option : Exclude list = #{exlist}")
 
 logger.info("Initializing parameters...")
 node1 = Diagutils.new(output_dir, 'INFO')
-mask1 = Maskutils.new(exlist, 'INFO')
+mask1 = Maskutils.new(exlist, hash_seed, 'INFO')
 valid1 = Validutils.new('INFO')
 
 logger.info("Collecting log files of td-agent...")
@@ -89,7 +92,7 @@ if mask == 'yes'
        		end
 	end
 end
-
+mask1.export_masklog(masklog)
 tar_file = node1.compress_output()
 logger.info("Generate tar file #{tar_file}")
 

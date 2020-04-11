@@ -2,33 +2,49 @@ require 'digest'
 require 'fileutils'
 require 'logger'
 require 'open3'
+require 'json'
 
 module Diagtool
 	class Maskutils
-		def initialize(exlist, log_level)
+		def initialize(exlist, hash_seed, log_level)
 			load_exlist(exlist)
 		    	@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
                         	"#{datetime}: [Maskutils] [#{severity}] #{msg}\n"
                     	})
 		    	@logger.debug("Initialize Maskutils: exlit = #{exlist}")
+			@hash_seed = hash_seed
+			@id = {
+				:fid =>'',
+				:lid =>'',
+				:cid =>''
+			}
+			@masklog = Hash.new { |h,k| h[k] = Hash.new(&h.default_proc) }
 	    	end
 	    	def mask_tdlog(input_file, clean)
+			line_id = 0
                 	f = File.open(input_file+'.mask', 'w')
                     	File.readlines(input_file).each do |line|
+				@id[:fid] = input_file
+				@id[:lid] = line_id
                      		line_masked = mask_tdlog_inspector(line)
                             	f.puts(line_masked)
+				line_id+=1
                     	end
                     	f.close
                     	FileUtils.rm(input_file) if clean == true
 		    	return input_file+'.mask'
             	end
             	def mask_tdlog_gz(input_file, clean)
+			line_id = 0
 			f = File.open(input_file+'.mask', 'w')
                     	gunzip_file = input_file+'.mask'+'.tmp'
                     	Open3.capture3("gunzip --keep -c #{input_file} > #{gunzip_file}")
                     	File.readlines(gunzip_file).each do |line|
+				@id[:fid] = input_file
+				@id[:lid] = line_id
                         	line_masked = mask_tdlog_inspector(line)
                             	f.puts(line_masked)
+				line_id+=1
                     	end
                     	f.close
                     	FileUtils.rm(gunzip_file)
@@ -43,25 +59,42 @@ module Diagtool
 			loop do
 				contents[i] = line.split(/\s/)[i].to_s
 				@logger.debug("Splitted Line #{i}: #{contents[i]}")
+				@id[:cid] = i.to_s
 				if contents[i].include?(',')
 					contents_s = contents[i].split(',')
 					cnt = 0
 					loop do
+						@id[:cid] = i.to_s + '-' + cnt.to_s
 						if contents_s[cnt].include?('://') ## Mask <http/dRuby>://<address:ip/hostname>:<port>
-                                        		@logger.debug("   URL Pattern Detected: #{contents_s[cnt]} -> #{mask_url_pattern(contents_s[cnt])}")
-                                        		contents_s[cnt] = mask_url_pattern(contents_s[cnt])
+                                        		is_mask, masked_contents = mask_url_pattern(contents_s[cnt])
+							if is_mask
+								@logger.debug("   URL Pattern Detected: #{contents_s[cnt]} -> #{masked_contents}")
+                                        			contents_s[cnt] = masked_contents
+							end
                                 		elsif contents_s[cnt].include?('=')
-                                        		@logger.debug("   Equal Pattern Detected: #{contents_s[cnt]} -> #{mask_equal_pattern(contents_s[cnt])}")
-                                        		contents_s[cnt] = mask_equal_pattern(contents_s[cnt])
+							is_mask, masked_contents = mask_equal_pattern(contents_s[cnt])
+							if is_mask
+                                        			@logger.debug("   Equal Pattern Detected: #{contents_s[cnt]} -> #{masked_contents}")
+                                        			contents_s[cnt] = masked_contents
+							end
                                 		elsif contents_s[cnt].include?(':') ## Mask <address:ip/hostname>:<port>
-                                        		@logger.debug("   Colon Pattern Detected: #{contents_s[cnt]} -> #{mask_colon_pattern(contents_s[cnt])}")
-                                        		contents_s[cnt] = mask_colon_pattern(contents_s[cnt])
+							is_mask, masked_contents = mask_colon_pattern(contents_s[cnt])
+							if is_mask
+                                        			@logger.debug("   Colon Pattern Detected: #{contents_s[cnt]} -> #{masked_contents}")
+                                        			contents_s[cnt] = masked_contents
+							end
        						elsif contents_s[cnt].include?('/') ## Mask <address:ip/hostname>:<port>
-                                                        @logger.debug("   Slash Pattern Detected: #{contents_s[cnt]} -> #{mask_slash_pattern(contents_s[cnt])}")
-                                                        contents_s[cnt] = mask_slash_pattern(contents_s[cnt])
-                                		elsif mask_ipv4_fqdn_exlist(contents_s[cnt])[0]
-                                        		@logger.debug("   Direct Pattern Detected: #{contents_s[cnt]} -> #{mask_direct_pattern(contents_s[cnt])}")
-                                        		contents_s[cnt] = mask_direct_pattern(contents_s[cnt])
+							is_mask, masked_contents = mask_slash_pattern(contents_s[cnt])
+							if is_mask
+                                                        	@logger.debug("   Slash Pattern Detected: #{contents_s[cnt]} -> #{masked_contents}")
+                                                        	contents_s[cnt] = masked_contents
+							end
+                                		else 
+							is_mask, masked_contents = mask_direct_pattern(contents_s[cnt])
+							if is_mask
+                                        			@logger.debug("   Direct Pattern Detected: #{contents_s[cnt]} -> #{masked_contents}")
+                                        			contents_s[cnt] = masked_contents
+							end
 						end
 						cnt+=1
 						break if cnt >= contents_s.length 
@@ -69,20 +102,35 @@ module Diagtool
 					contents[i] = contents_s.join(',')
 				else
 					if contents[i].include?('://') ## Mask <http/dRuby>://<address:ip/hostname>:<port>
-						@logger.debug("   URL Pattern Detected: #{contents[i]} -> #{mask_url_pattern(contents[i])}")
-						contents[i] = mask_url_pattern(contents[i])
+						is_mask, masked_contents = mask_url_pattern(contents[i])
+						if is_mask
+							@logger.debug("   URL Pattern Detected: #{contents[i]} -> #{masked_contents}")
+							contents[i] = masked_contents
+						end
 					elsif contents[i].include?('=')
-						@logger.debug("   Equal Pattern Detected: #{contents[i]} -> #{mask_equal_pattern(contents[i])}")
-						contents[i] = mask_equal_pattern(contents[i])
+						is_mask, masked_contents = mask_equal_pattern(contents[i])
+						if is_mask
+							@logger.debug("   Equal Pattern Detected: #{contents[i]} -> #{masked_contents}")
+							contents[i] = masked_contents
+						end
 					elsif contents[i].include?(':') ## Mask <address:ip/hostname>:<port>
-						@logger.debug("   Colon Pattern Detected: #{contents[i]} -> #{mask_colon_pattern(contents[i])}")
-						contents[i] = mask_colon_pattern(contents[i])
+						is_mask, masked_contents = mask_colon_pattern(contents[i])
+						if is_mask
+							@logger.debug("   Colon Pattern Detected: #{contents[i]} -> #{masked_contents}")
+							contents[i] = masked_contents
+						end
 					elsif contents[i].include?('/')
-						@logger.debug("   Slash Pattern Detected: #{contents[i]} -> #{mask_slash_pattern(contents[i])}")
-						contents[i] = mask_slash_pattern(contents[i])
-					elsif mask_ipv4_fqdn_exlist(contents[i])[0]
-						@logger.debug("   Direct Pattern Detected: #{contents[i]} -> #{mask_direct_pattern(contents[i])}")
-                       				contents[i] = mask_direct_pattern(contents[i])
+						is_mask, masked_contents = mask_slash_pattern(contents[i])
+						if is_mask
+							@logger.debug("   Slash Pattern Detected: #{contents[i]} -> #{masked_contents}")
+							contents[i] = masked_contents
+						end
+					else
+						is_mask, masked_contents = mask_direct_pattern(contents[i])
+						if is_mask
+							@logger.debug("   Direct Pattern Detected: #{contents[i]} -> #{masked_contents}")
+                       					contents[i] = masked_contents
+						end
 					end
 				end
 				i+=1
@@ -93,20 +141,27 @@ module Diagtool
 			return line_masked
 	    	end
 	    	def mask_direct_pattern(str)
+			is_mask = false
+			before_mask = ''
+			after_mask = ''
 			if str.include?(">")
 				str = str.gsub(">",'')
-				str_m = mask_ipv4_fqdn_exlist(str)[1]
-				str_m << ">"
+				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(str)
+				str_m = after_mask + ">" if is_mask
 			elsif str.include?("]")
                         	str = str.gsub("]",'')
-                        	str_m = mask_ipv4_fqdn_exlist(str)[1]
-                        	str_m << "]"
+				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(str)
+				str_m = after_mask + "]" if is_mask
 			else
-				str_m = mask_ipv4_fqdn_exlist(str)[1]
+				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(str)
+				str_m = after_mask if is_mask
 			end
-			return str_m
+			return is_mask, str_m
 	    	end	
 	    	def mask_url_pattern(str)
+			is_mask = false
+                        before_mask = ''
+                        after_mask = ''
 			url = str.split('://')
              		cnt_url = 0
                 	loop do
@@ -115,63 +170,80 @@ module Diagtool
                      			cnt_address = 0
                        			loop do
                     				if address[cnt_address].include?("]")
-							address[cnt_address] = mask_ipv4_fqdn_exlist(address[cnt_address].gsub(']',''))[1]
-                            				address[cnt_address] << "]"
+							is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub(']',''))
+							address[cnt_address] = after_mask + "]" if is_mask
                      				elsif address[cnt_address].include?(">")
-                              				address[cnt_address] = mask_ipv4_fqdn_exlist(address[cnt_address].gsub('>',''))[1]
-                              				address[cnt_address] << ">"
+							is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub('>',''))
+							address[cnt_address] = after_mask + ">" if is_mask
                         			else
-                          				address[cnt_address] = mask_ipv4_fqdn_exlist(address[cnt_address])[1]
+							is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(address[cnt_address])
+							address[cnt_address] = after_mask if is_mask
                     				end
                         			cnt_address+=1
-                        			break if cnt_address >= address.length
+                        			break if cnt_address >= address.length || is_mask == true
                      			end
                     			url[cnt_url] = address.join(':')
               	    		else
                   			if url[cnt_url].include?("]")
-                         			url[cnt_url] = mask_ipv4_fqdn_exlist(url[cnt_url].gsub(']',''))[1]
-                           			url[cnt_url] << "]"
+						is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub(']',''))
+                         			url[cnt_url] = after_mask + "]" if is_mask
 					elsif url[cnt_url].include?(">")
-                          			url[cnt_url] = mask_ipv4_fqdn_exlist(url[cnt_url].gsub('>',''))[1]
-                                		url[cnt_url] << ">"
+						is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub('>',''))
+                          			url[cnt_url] = after_mask + ">" if is_mask
                       			else
-                            			url[cnt_url] = mask_ipv4_fqdn_exlist(url[cnt_url])[1]
+						is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(url[cnt_url])
+                            			url[cnt_url] = after_mask if is_mask
                        			end
-             	    		end
+				end
                         	cnt_url+=1
-                        	break if cnt_url >= url.length
+                        	break if cnt_url >= url.length || is_mask == true
           		end
-			return url.join('://')
+			str_m = url.join('://')
+			str_m << ":" if str.end_with?(':')
+			return is_mask, str_m
 	    	end
 	    	def mask_equal_pattern(str)
+			is_mask = false
+                        before_mask = ''
+                        after_mask = ''
 			l = str.split('=') ## Mask host=<address:ip/hostname> or bind=<address: ip/hostname>
-                	l[1] = mask_ipv4_fqdn_exlist(l[1])[1]
-                	return l.join('=')
+			is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[1])
+                	if is_mask
+				l[1] = after_mask
+			end
+                	return is_mask, l.join('=')
 	    	end
 	    	def mask_colon_pattern(str)
-			end_with_collon = true if str.end_with?(':')
+			is_mask = false
+                        before_mask = ''
+                        after_mask = ''
 			l = str.split(':')
 			i = 0
 			loop do
-				l[i] = mask_ipv4_fqdn_exlist(l[i])[1]
+				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[i])
+				l[i] = after_mask if is_mask
 				i+=1
-				break if i >= l.length
+				break if i >= l.length || is_mask == true
 			end
 			str_m = l.join(':')
-			if end_with_collon
-				str_m << ":"
-			end
-                	return str_m
+			str_m << ":" if str.end_with?(':')
+                	return is_mask, str_m
 	    	end
-		def mask_slash_pattern(str)	
+		def mask_slash_pattern(str)
+			is_mask = false
+                        before_mask = ''
+                        after_mask = ''
 			l = str.split('/')
                    	i = 0
                     	loop do
-         			l[i] = mask_ipv4_fqdn_exlist(l[i])[1]
+				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[i])
+				l[i] = after_mask if is_mask
                               	i+=1
-                             	break if i >= l.length
+                             	break if i >= l.length || is_mask == true
                     	end
-                        return l.join('/')
+			str_m = l.join('/')
+                        str_m << ":" if str.end_with?(':')
+			return is_mask, str_m
 		end
 	    	def is_ipv4?(str)
 			!!(str =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)
@@ -196,45 +268,88 @@ module Diagtool
 	    	end
 	    	def mask_ipv4_fqdn_exlist(str)
 		 	str = str.to_s
+			mtype = ''
+			is_mask = true
 		    	if is_ipv4?(str)
-				return true, 'ipv4_md5_'+Digest::MD5.hexdigest(str)
+				str_new = str
+				mtype = 'ipv4'
 		    	elsif is_ipv4?(str.gsub('\"',''))
-				return true, 'ipv4_md5_'+Digest::MD5.hexdigest(str.gsub('\"',''))
+				str_new = str.gsub('\"','')
+				mtype = 'ipv4'
 		    	elsif is_ipv4?(str.gsub('\'',''))
-				return true, 'ipv4_md5_'+Digest::MD5.hexdigest(str.gsub('\'',''))
+				str_new =  str.gsub('\'','')
+				mtype = 'ipv4'
 		    	elsif is_ipv4?(str.gsub('"',''))
-				return true, 'ipv4_md5_'+Digest::MD5.hexdigest(str.gsub('"',''))
+				str_new = str.gsub('"','')
+				mtype = 'ipv4'
 		    	elsif is_ipv4?(str.gsub(/\"/,''))
-			    	return true, 'ipv4_md5_'+Digest::MD5.hexdigest(str.gsub(/\"/,''))
+				str_new = str.gsub(/\"/,'')
+				mtype = 'ipv4'
 		    	elsif is_ipv4?(str.gsub('//',''))
-			    	return true, 'ipv4_md5_'+Digest::MD5.hexdigest(str.gsub('//',''))
+				str_new = str.gsub('//','')
+				mtype = 'ipv4'
 		    	elsif is_fqdn?(str)
-			    	return true, 'fqdn_md5_'+Digest::MD5.hexdigest(str)
+				str_new = str
+				mtype = 'fqdn'
 		    	elsif is_fqdn?(str.gsub('\"',''))
-			    	return true, 'fqdn_md5_'+Digest::MD5.hexdigest(str.gsub('\"',''))
+			    	str_new = str.gsub('\"','')
+				mtype = 'fqdn'
 		    	elsif is_fqdn?(str.gsub('\'',''))
-			    	return true, 'fqdn_md5_'+Digest::MD5.hexdigest(str.gsub('\'',''))
+				str_new = str.gsub('\'','')
+                                mtype = 'fqdn'
 		    	elsif is_fqdn?(str.gsub('"',''))
-			    	return true, 'fqdn_md5_'+Digest::MD5.hexdigest(str.gsub('"',''))
+				str_new = str.gsub('"','')
+                                mtype = 'fqdn'
 		    	elsif is_fqdn?(str.gsub(/\"/,''))
-			    	return true, 'fqdn_md5_'+Digest::MD5.hexdigest(str.gsub(/\"/,''))
+				str_new = str.gsub(/\"/,'')
+				mtype = 'fqdn'
 		    	elsif is_fqdn?(str.gsub('//',''))
-			    	return true, 'fqdn_md5_'+Digest::MD5.hexdigest(str.gsub('//',''))
+				str_new = str.gsub('//','')
+                                mtype = 'fqdn'
 		    	elsif is_exlist?(str)
-			    	return true, 'exlist_md5_'+Digest::MD5.hexdigest(str)
+				str_new = str
+                                mtype = 'exlist'
 		    	elsif is_exlist?(str.gsub('\"',''))
-			    	return true, 'exlist_md5_'+Digest::MD5.hexdigest(str.gsub('\"',''))
+				str_new = str.gsub('\"','')
+				mtype = 'exlist'
 		    	elsif is_exlist?(str.gsub('\'',''))
-			    	return true, 'exlist_md5_'+Digest::MD5.hexdigest(str.gsub('\'',''))
+				str_new = str.gsub('\'','')
+                                mtype = 'exlist'
 		    	elsif is_exlist?(str.gsub('"',''))
-			    	return true, 'exlist_md5_'+Digest::MD5.hexdigest(str.gsub('"',''))
+				str_new = str.gsub('"','')
+                                mtype = 'exlist'
 		    	elsif is_exlist?(str.gsub(/\"/,''))
-			    	return true, 'exlist_md5_'+Digest::MD5.hexdigest(str.gsub(/\"/,''))
+				str_new = str.gsub(/\"/,'')
+				mtype = 'exlist'
 		    	elsif is_exlist?(str.gsub('//',''))
-			    	return true, 'exlist_md5_'+Digest::MD5.hexdigest(str.gsub('//',''))
+				str_new = str.gsub('//','')
+                                mtype = 'exlist'
 		    	else
-			    	return false, str
+				str_new = str
+				mtype = ''
+			    	is_mask = false
 		    	end
+			if is_mask
+				str_hash = mtype + '_md5_' + Digest::MD5.hexdigest(@hash_seed + str_new)
+				put_masklog(str_new, str_hash)
+			else
+				str_hash = str_new
+			end
+			return is_mask, str_new, str_hash
+		end
+		def put_masklog(original, hash)
+			uid = "Line#{@id[:lid]}-#{@id[:cid]}"
+			@masklog[@id[:fid]][uid]['original'] = original
+			@masklog[@id[:fid]][uid]['hash'] = hash
+		end
+		def get_masklog()
+			masklog_json = JSON.pretty_generate(@masklog)
+			return masklog_json
+		end
+		def export_masklog(output_file)
+			File.open(output_file, 'w') do |f|
+                                f.puts(get_masklog())
+                        end
 		end 
     end
 end
