@@ -100,8 +100,8 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 The offline tool is also provided to generate the mask on single file for non-fluentd environment.
 #### Arguments of online tool:
 ```
-# ruby diagtool_mask_local.rb -h
-Usage: diagtool_mask_local.rb -i INPUT_FILE -m {yes | no} -e {word1,[word2...]} -f {listfile}
+# ruby diagtool_offline.rb -h
+Usage: diagtool_offline.rb -i INPUT_FILE -m {yes | no} -e {word1,[word2...]} -f {listfile}
     -i, --input FILE                 Input file (Mandatory)
     -m, --mask YES|NO                Enable mask function (Default=True)
     -e, --exclude-list LIST          Provide a list of exclude words which will to be masked (Default=None)

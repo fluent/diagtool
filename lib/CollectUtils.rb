@@ -3,15 +3,19 @@ require 'open3'
 require 'logger'
 
 module Diagtool
-	class Diagutils
-		def initialize(output_dir, log_level)
+	class CollectUtils
+		def initialize(conf, log_level)
 		    	@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
   				"#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
 		    	})
-		    	@time = Time.new
-		    	@time_format = @time.strftime("%Y%m%d%0k%M%0S")
-		    	@output_dir = output_dir
-		    	@workdir = @output_dir+'/'+@time_format
+			puts conf
+		    	#@time = Time.new
+		    	#@time_format = @time.strftime("%Y%m%d%0k%M%0S")
+		    	#@output_dir = output_dir
+			@time_format = conf[:time]
+			@output_dir = conf[:output_dir]
+
+		    	@workdir = @output_dir + '/' + @time_format
 		    	FileUtils.mkdir_p(@workdir)
 		    	
 			@tdenv = get_tdenv()
@@ -21,10 +25,10 @@ module Diagtool
 		    	@tdlog_path = @tdenv['TD_AGENT_LOG_FILE'].gsub(@tdlog,'')
 			
 			@osenv = get_osenv()
-		    	@oslog_path = '/var/log/'       # As of Centos8.1
-		    	@oslog = 'messages'             # As of Centos8.1
-		    	@sysctl_path = '/etc/'          # As of Centos8.1
-		    	@sysctl = 'sysctl.conf'         # As of Centos8.1	
+		    	@oslog_path = '/var/log/'
+		    	@oslog = 'messages'
+		    	@sysctl_path = '/etc/'
+		    	@sysctl = 'sysctl.conf'        
 
 		    	@logger.info("Loading the environment parameters...")
 			@logger.info("    operating system = #{@osenv['Operating System']}")
@@ -59,6 +63,17 @@ module Diagtool
 		    	end
 		    	return env_dict
 	    	end
+		def export_env()
+			env = {
+                                :os => @osenv['Operating System'],
+                                :kernel => @osenv['Kernel'],
+                                :tdconf => @tdconf,
+                                :tdconf_path => @tdconf_path,
+                                :tdlog => @tdlog,
+                                :tdlog_path => @tdlog_path
+                        }
+			return env
+		end
 	    	def collect_tdconf()
 		    	FileUtils.mkdir_p(@workdir+@tdconf_path)
 		    	FileUtils.cp(@tdconf_path+@tdconf, @workdir+@tdconf_path)
