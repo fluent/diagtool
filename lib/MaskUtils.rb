@@ -5,14 +5,14 @@ require 'open3'
 require 'json'
 
 module Diagtool
-	class Maskutils
-		def initialize(exlist, hash_seed, log_level)
-			load_exlist(exlist)
+	class MaskUtils
+		def initialize(conf, log_level)
+			load_exlist(conf[:exlist])
 		    	@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
                         	"#{datetime}: [Maskutils] [#{severity}] #{msg}\n"
                     	})
-		    	@logger.debug("Initialize Maskutils: exlit = #{exlist}")
-			@hash_seed = hash_seed
+		    	@logger.debug("Initialize Maskutils: exlit = #{conf[:exlist]}")
+			@hash_seed = conf[:seed]
 			@id = {
 				:fid =>'',
 				:lid =>'',

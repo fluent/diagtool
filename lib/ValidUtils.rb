@@ -1,7 +1,7 @@
 require 'logger'
 
 module Diagtool
-	class Validutils
+	class ValidUtils
 		def initialize(log_level)
 			@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
   				"#{datetime}: [Validutils] [#{severity}] #{msg}\n"
@@ -27,16 +27,16 @@ module Diagtool
 			File.readlines(ulimit_file).each { |line|
 				if line.chomp.to_i >= @def_ulimit.to_i
 					@logger.info("    ulimit => #{line.chomp.to_i} is correct")
-					return true, line.chomp.to_i
+					return true, @def_ulimit.to_i, line.chomp.to_i
 				else
 					@logger.warn("    ulimit => #{line.chomp.to_i} is incorrect, should be #{@def_ulimit}")
-					return false, line.chomp.to_i
+					return false, @def_ulimit.to_i, line.chomp.to_i
 				end 
 			}
 		end
 		def valid_sysctl(sysctl_file)
 			h = Hash.new()
-			v = Hash.new()
+			v = Hash.new { |i,j| i[j] = Hash.new(&h.default_proc) }
 			@logger.info("Loading sysctl file: #{sysctl_file}")
 			File.readlines(sysctl_file).each{ |line|
 				if line.include?("net")
@@ -50,10 +50,14 @@ module Diagtool
 					h[key] = value
 					if @def_sysctl[key] == value
 						@logger.info("#{key} => #{value} is correct")
-						v[key] = "correct"
+						v[key]['value'] = value
+						v[key]['recommend'] = @def_sysctl[key]	
+						v[key]['result'] = "correct"
 					else
 						@logger.warn("#{key} => #{value} is incorrect, should be #{@def_sysctl[key]}")
-						v[key] = "incorrect"
+						v[key]['value'] = value
+                                                v[key]['recommend'] = @def_sysctl[key]
+						v[key]['result'] = "incorrect"
 					end
 				end
 			}
