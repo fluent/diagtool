@@ -25,12 +25,13 @@ The online tool provides the function to get the file path of configuration and 
 
 #### Arguments of online tool:
 ```
-# ruby diagtool.rb -h
+# ruby diagtool.rb --help
 Usage: diagtool.rb -o OUTPUT_DIR -m {yes | no} -e {word1,[word2...]} -f {listfile}
     -o, --output DIR                 Output directory (Default=./output)
-    -m, --mask YES|NO                Enable mask function (Default=True)
-    -e, --exclude-list LIST          Provide a list of exclude words which will to be masked (Default=None)
-    -f, --exclude-file FILE          provide a file which describes a List of exclude words (Default=None)
+    -m, --mask yes|no                Enable mask function (Default=yes)
+    -e, --exclude-list word1,word2   Provide a list of exclude words which will to be masked (Default=None)
+    -f, --exclude-file listfile      provide a file which describes a List of exclude words (Default=None)
+    -s, --hash-seed seed             provide a word which will be used when generate the mask (Default=None)
 ```
 The list of exclude keyword which will be mask can be specified both -e option and -f option.
 The format of exclude list file specified in -f option should be followed sample.
