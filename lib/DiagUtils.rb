@@ -1,5 +1,6 @@
 require 'optparse'
 require 'logger'
+require 'fileutils'
 require '../lib/CollectUtils'
 require '../lib/MaskUtils'
 require '../lib/ValidUtils'
@@ -8,78 +9,101 @@ include Diagtool
 module Diagtool
 	class DiagUtils
 		def initialize(params)
-			@logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
-  				"#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
-			})
 			time = Time.new
                         @time_format = time.strftime("%Y%m%d%0k%M%0S")
 			@conf = parse_diagconf(params)
-			@logger.info("Parsing command options...")
-                        @logger.info("   Option : Output directory = #{@conf[:output_dir]}")
-                        @logger.info("   Option : Mask = #{@conf[:mask]}")
-                        @logger.info("   Option : Exclude list = #{@conf[:exlist]}")
-                        @logger.info("   Option : Exclude list = #{@conf[:seed]}")
 			@conf[:time] = @time_format
+                        @conf[:workdir] = @conf[:output_dir] + '/' + @time_format
+			FileUtils.mkdir_p(@conf[:workdir])
+			diaglog = @conf[:workdir] + '/diagtool.output'
+			@masklog = './mask_' + @time_format + '.json'
+			@logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
+  				"#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
+			})
+			@logger_file = Logger.new(diaglog, formatter: proc {|severity, datetime, progname, msg|
+                                "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
+                        })
+			diaglogger_info("Parsing command options...")
+                        diaglogger_info("   Option : Output directory = #{@conf[:output_dir]}")
+                        diaglogger_info("   Option : Mask = #{@conf[:mask]}")
+                        diaglogger_info("   Option : Exclude list = #{@conf[:exlist]}")
+                        diaglogger_info("   Option : Hash Seed = #{@conf[:seed]}")
 		end
 		def diagtool()
 			loglevel = 'WARN'
-			@logger.info("Initializing parameters...")
+			diaglogger_info("Initializing parameters...")
 			c = CollectUtils.new(@conf, loglevel)
 			c_env = c.export_env()
-			@logger.info("[Collect] Loading the environment parameters...")
-                        @logger.info("[Collect]    operating system = #{c_env[:os]}")
-                        @logger.info("[Collect]    kernel version = #{c_env[:kernel]}")
-                        @logger.info("[Collect]    td-agent conf path = #{c_env[:tdconf_path]}")
-                        @logger.info("[Collect]    td-agent conf file = #{c_env[:tdconf]}")
-                        @logger.info("[Collect]    td-agent log path = #{c_env[:tdlog_path]}")
-                        @logger.info("[Collect]    td-agent log = #{c_env[:tdlog]}")
+			diaglogger_info("[Collect] Loading the environment parameters...")
+                        diaglogger_info("[Collect]    operating system = #{c_env[:os]}")
+                        diaglogger_info("[Collect]    kernel version = #{c_env[:kernel]}")
+                        diaglogger_info("[Collect]    td-agent conf path = #{c_env[:tdconf_path]}")
+                        diaglogger_info("[Collect]    td-agent conf file = #{c_env[:tdconf]}")
+                        diaglogger_info("[Collect]    td-agent log path = #{c_env[:tdlog_path]}")
+                        diaglogger_info("[Collect]    td-agent log = #{c_env[:tdlog]}")
 			m = MaskUtils.new(@conf, loglevel)
 			v = ValidUtils.new(loglevel)
 							
-			@logger.info("Collecting log files of td-agent...")
+			diaglogger_info("[Collect] Collecting log files of td-agent...")
 			tdlog = c.collect_tdlog()
-			@logger.info("log files of td-agent are stored in #{tdlog}")
+			diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
 
-			@logger.info("Collecting config file of td-agent...")
+			diaglogger_info("[Collect] Collecting config file of td-agent...")
 			tdconf = c.collect_tdconf()
-			@logger.info("config file is stored in #{tdconf}")
+			diaglogger_info("[Collect] config file is stored in #{tdconf}")
 
-			@logger.info("Collecting date/time information...")
+			diaglogger_info("[Collect] Collecting config file of OS log...")
+                        oslog = c.collect_oslog()
+			if @conf[:mask] == 'yes'
+				diaglogger_info("[Mask] Masking OS log file : #{oslog}...")
+				oslog = m.mask_tdlog(oslog, clean = true)
+			end
+                        diaglogger_info("[Collect] config file is stored in #{oslog}")
+
+			diaglogger_info("[Collect] Collecting date/time information...")
 			ntp = c.collect_ntp(command="chrony")
-			@logger.info("date/time information is stored in #{ntp}")
-
-			@logger.info("Collecting systctl information...")
-			sysctl = c.collect_sysctl()
-			@logger.info("sysctl information is stored in #{sysctl}")
+			diaglogger_info("[Collect] date/time information is stored in #{ntp}")
 			
-			@logger.info("Validating systctl information...")
+			diaglogger_info("[Collect] Collecting netstat information...")
+                        netstat = c.collect_netstat()
+			if @conf[:mask] == 'yes'
+				diaglogger_info("[Mask] Masking netstat file : #{netstat}...")
+				netstat = m.mask_tdlog(netstat, clean = true)
+			end
+                        diaglogger_info("[Collect] netstat information is stored in #{netstat}")		
+
+			diaglogger_info("[Collect] Collecting systctl information...")
+			sysctl = c.collect_sysctl()
+			diaglogger_info("[Collect] sysctl information is stored in #{sysctl}")
+			
+			diaglogger_info("[Valid] Validating systctl information...")
 			ret, sysctl = v.valid_sysctl(sysctl)
 			list =  sysctl.keys
 			list.each do |k|
 				if sysctl[k]['result'] == 'correct'
-					@logger.info("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is correct (recommendation is #{sysctl[k]['recommend']})")
+					diaglogger_info("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is correct (recommendation is #{sysctl[k]['recommend']})")
 				elsif sysctl[k]['result'] == 'incorrect'
-					@logger.warn("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is incorrect (recommendation is #{sysctl[k]['recommend']})")
+					diaglogger_warn("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is incorrect (recommendation is #{sysctl[k]['recommend']})")
 				end
 			end
 
-			@logger.info("Collecting ulimit information...")
+			diaglogger_info("[Collect] Collecting ulimit information...")
 			ulimit = c.collect_ulimit()
-			@logger.info("ulimit information is stored in #{ulimit}")
+			diaglogger_info("[Collect] ulimit information is stored in #{ulimit}")
 
-			@logger.info("Validating ulimit information...")
+			diaglogger_info("[Valid] Validating ulimit information...")
 			ret, rec, val = v.valid_ulimit(ulimit)
 			if ret == true
-				@logger.info("[Valid]    ulimit => #{val} is correct (recommendation is >#{rec})")
+				diaglogger_info("[Valid]    ulimit => #{val} is correct (recommendation is >#{rec})")
 			else
-				@logger.warn("[Valid]    ulimit => #{val} is incorrect (recommendation is >#{rec})")
+				diaglogger_warn("[Valid]    ulimit => #{val} is incorrect (recommendation is >#{rec})")
 			end
 
 			if @conf[:mask] == 'yes'
-        			@logger.info("Masking td-agent config file : #{tdconf}...")
+        			diaglogger_info("[Mask] Masking td-agent config file : #{tdconf}...")
         			m.mask_tdlog(tdconf, clean = true)
         			tdlog.each do | file |
-                			@logger.info("Masking td-agent log file : #{file}...")
+                			diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
                 			filename = file.split("/")[-1]
                 			if filename.include?(".gz")
                         			m.mask_tdlog_gz(file, clean = true)
@@ -88,9 +112,10 @@ module Diagtool
                 			end
         			end
 			end
-			m.export_masklog('mask.log')
+			diaglogger_info("[Mask] Export mask log file : #{@masklog}")
+			m.export_masklog(@masklog)
 			tar_file = c.compress_output()
-			@logger.info("Generate tar file #{tar_file}")
+			diaglogger_info("[Collect] Generate tar file #{tar_file}")
 		end
 
 		def parse_diagconf(params)
@@ -130,8 +155,23 @@ module Diagtool
         		end
 			options[:exlist] = options[:exlist].uniq 
         		options[:seed] = params[:"hash-seed"] if params[:"hash-seed"] != nil
-			puts options
 			return options	
 		end
+		def diaglogger_debug(str)
+                        @logger.debug(str)
+                        @logger_file.debug(str)
+                end
+		def diaglogger_info(str)
+			@logger.info(str)
+			@logger_file.info(str)
+		end
+		def diaglogger_warn(str)
+                        @logger.warn(str)
+                        @logger_file.warn(str)
+                end
+		def diaglogger_error(str)
+                        @logger.error(str)
+                        @logger_file.error(str)
+                end
 	end
 end
