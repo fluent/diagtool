@@ -147,7 +147,8 @@ Usage: diagtool_offline.rb -i INPUT_FILE -m {yes | no} -e {word1,[word2...]} -f 
 
 ## Tested Environment
 - OS : CentOS 8.1
-- Fluentd : td-agent version 1.9.2
+- Fluentd : td-agent version 2
+  https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3
 - FluentBit : (TBD)
 
 
