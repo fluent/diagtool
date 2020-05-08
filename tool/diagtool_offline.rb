@@ -1,6 +1,6 @@
 require 'optparse'
 require 'logger'
-require '../lib/maskutils'
+require '../lib/MaskUtils'
 
 include Diagtool
 
@@ -11,10 +11,11 @@ log_level = 'INFO'
 input_file = ''
 dir = ''
 mask = 'yes'
+hash_seed = ''
 exlist= Array.new
 
 opt = OptionParser.new
-opt.banner = "Usage: #{$0} -i INPUT_FILE -m {yes | no} -e {word1,[word2...]} -f {listfile}"
+opt.banner = "Usage: #{$0} -i INPUT_FILE -m {yes | no} -e {word1,[word2...]} -f {listfile} -s {hash seed}"
 opt.on('-i','--input FILE', String, 'Input file') { |i|
 	if File.exist?(i)
 		input_file = i 
@@ -43,16 +44,20 @@ opt.on('-f','--exclude-file FILE', String, 'provide a file which describes a Lis
 		exit!
 	end
 }
+opt.on('-s','--hash-seed seed', String, 'provide a word which will be used when generate the mask (Default=None)') { |s| hash_seed = s }
 opt.parse(ARGV)
 exlist = exlist.uniq
-hash_seed = 'test'
 masklog = '/root/work/mask.log'
+conf = {
+	:exlist => exlist,
+	:seed => hash_seed
+	}
 
 logger.info("Parsing command options...")
 logger.info("   Option : Input file = #{input_file}")
 logger.info("   Option : Mask = #{mask}")
 logger.info("   Option : Exclude list = #{exlist}")
-mask1 = Maskutils.new(exlist, hash_seed, log_level)
+mask1 = MaskUtils.new(conf, log_level)
 
 if input_file.nil?
 	logger.info("Masking td-agent log file : #{input_file}...")

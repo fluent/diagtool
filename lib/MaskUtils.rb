@@ -24,6 +24,7 @@ module Diagtool
 			line_id = 0
                 	f = File.open(input_file+'.mask', 'w')
                     	File.readlines(input_file).each do |line|
+				line = line.encode('utf-8', 'binary', :invalid => :replace, :undef => :replace, :replace => '')   # temporary
 				@id[:fid] = input_file
 				@id[:lid] = line_id
                      		line_masked = mask_tdlog_inspector(line)
@@ -207,9 +208,12 @@ module Diagtool
                         before_mask = ''
                         after_mask = ''
 			l = str.split('=') ## Mask host=<address:ip/hostname> or bind=<address: ip/hostname>
-			is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[1])
-                	if is_mask
-				l[1] = after_mask
+			i = 0
+			loop do
+				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[i])
+                		l[i] = after_mask if is_mask
+                                i+=1
+                                break if i >= l.length || is_mask == true
 			end
                 	return is_mask, l.join('=')
 	    	end
@@ -249,7 +253,9 @@ module Diagtool
 			!!(str =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)
 	    	end
 	    	def is_fqdn?(str)
-			!!(str =~ /^\b((?=[a-z0-9-]{1,63}\.)[a-z0-9]+(-[a-z0-9]+)*\.)+([A-Za-z]|[A-Za-z][A-Za-z\-]*[A-Za-z])$/)
+			#!!(str =~ /^\b((?=[a-z0-9-]{1,63}\.)[a-z0-9]+(-[a-z0-9]+)*\.)+([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/)
+			!!(str =~ /^\b(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.){2,}([A-Za-z]|[A-Za-z][A-Za-z\-]*[A-Za-z]){2,}$/)
+			#!!(str =~ /^\b(?=^.{1,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)/)
 		end
 	    	def load_exlist(list)
 			@exclude_list = Array.new

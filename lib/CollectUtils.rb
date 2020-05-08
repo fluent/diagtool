@@ -8,14 +8,13 @@ module Diagtool
 		    	@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
   				"#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
 		    	})
-			puts conf
 		    	#@time = Time.new
 		    	#@time_format = @time.strftime("%Y%m%d%0k%M%0S")
 		    	#@output_dir = output_dir
 			@time_format = conf[:time]
 			@output_dir = conf[:output_dir]
 
-		    	@workdir = @output_dir + '/' + @time_format
+		    	@workdir = conf[:workdir]
 		    	FileUtils.mkdir_p(@workdir)
 		    	
 			@tdenv = get_tdenv()
@@ -45,7 +44,7 @@ module Diagtool
         			s = l.split(":")
         			os_dict[s[0].chomp.strip] = s[1].chomp.strip
 			}
-			File.open(@workdir+'/os_env.txt', 'w') do |f|
+			File.open(@workdir+'/os_env.output', 'w') do |f|
                                 f.puts(stdout)
                         end
 			return os_dict
@@ -53,7 +52,7 @@ module Diagtool
 	    	def get_tdenv()
 			stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
 		    	env_dict = {}
-		    	File.open(@workdir+'/td-agent_env.txt', 'w') do |f|
+		    	File.open(@workdir+'/td-agent_env.output', 'w') do |f|
 				f.puts(stdout)
 		    	end
 		    	stdout.split().each do | l |
@@ -90,17 +89,26 @@ module Diagtool
 		    	return @workdir+@sysctl_path+@sysctl
 	    	end
 	    	def collect_oslog()
-		    	FileUtils.mkdir_p(@workdir+@sysctl_path)
-		    	FileUtils.cp(@sysctl_path+@sysctl, @workdir+@sysctl_path)
-		    	return @workdir+@sysctl_path+@sysctl
+		    	FileUtils.mkdir_p(@workdir+@oslog_path)
+		    	FileUtils.cp(@oslog_path+@oslog, @workdir+@oslog_path)
+		    	return @workdir+@oslog_path+@oslog
 	    	end
 	    	def collect_ulimit()
+			output = @workdir+'/ulimit_n.output'
 		    	stdout, stderr, status = Open3.capture3("ulimit -n")
-		    	File.open(@workdir+'/ulimit_info.output', 'w') do |f|
+		    	File.open(output, 'w') do |f|
 			 	f.puts(stdout)
 		    	end
-		    	return @workdir+'/ulimit_info.output'
+		    	return output
 	    	end
+		def collect_netstat()
+			output = @workdir+'/netstat_n.output'
+                        stdout, stderr, status = Open3.capture3("netstat -n")
+                        File.open(output, 'w') do |f|
+                                f.puts(stdout)
+                        end
+                        return output
+                end
 	    	def collect_ntp(command)
 		    	stdout_date, stderr_date, status_date = Open3.capture3("date")
 		    	stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources") if command == "chrony"
