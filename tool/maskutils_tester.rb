@@ -1,4 +1,4 @@
-require '../lib/MaskUtils'
+require '../lib/maskutils'
 include Diagtool
 
 #line = 'test01.demo.com,test02.demo.com:8080'
