@@ -16,7 +16,7 @@ module Diagtool
 
 		    	@workdir = conf[:workdir]
 		    	FileUtils.mkdir_p(@workdir)
-		    	
+			
 			@tdenv = get_tdenv()
 		    	@tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
 		    	@tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
@@ -120,9 +120,11 @@ module Diagtool
 		    	return @workdir+'/ntp_info.output'
 	    	end
 	    	def compress_output()
-		    	tar_file = @output_dir+'/diagout-'+@time_format+'.tar.gz'
-		    	stdout, stderr, status = Open3.capture3("tar cvfz #{tar_file} #{@workdir}")
- 		    	return tar_file
+			Dir.chdir(@output_dir)
+		    	#tar_file = @output_dir+'/diagout-'+@time_format+'.tar.gz'
+		    	tar_file = 'diagout-'+@time_format+'.tar.gz'
+		    	stdout, stderr, status = Open3.capture3("tar cvfz #{tar_file} #{@time_format}")
+ 		    	return @output_dir + '/' + tar_file
 	    	end
     	end
 end
