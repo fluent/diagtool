@@ -1,6 +1,6 @@
 require 'optparse'
 require 'logger'
-require '../lib/MaskUtils'
+require '../lib/maskutils'
 
 include Diagtool
 
