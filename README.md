@@ -18,8 +18,6 @@ The scope of data collection:<br>
 
 
 ## Usage
-
-### Online Tool
 Users can collect configuration/log files and create masked file automatically by running the online tool.
 The online tool provides the function to get the file path of configuration and log files by parsing the systemctl.
 
@@ -128,22 +126,6 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 ```
 <match exlist_md5_59d1a1c205305f383f55cc245871f89f>
 ```
-
-
-### Offline Tool
-The offline tool is also provided to generate the mask on single file for non-fluentd environment.
-#### Arguments of online tool:
-```
-# ruby diagtool_offline.rb --help
-Usage: diagtool_offline.rb -i INPUT_FILE -m {yes | no} -e {word1,[word2...]} -f {listfile} -s {hash seed}
-    -i, --input FILE                 Input file
-    -d, --directory DIRECTORY        Directpry of input file
-    -m, --mask YES|NO                Enable mask function (Default=True)
-    -e, --exclude-list LIST          Provide a list of exclude words which will to be masked (Default=None)
-    -f, --exclude-file FILE          provide a file which describes a List of exclude words (Default=None)
-    -s, --hash-seed seed             provide a word which will be used when generate the mask (Default=None)
-```
-
 
 ## Tested Environment
 - OS : CentOS 8.1
