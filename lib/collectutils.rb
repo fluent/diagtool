@@ -147,10 +147,10 @@ module Diagtool
 		    	end
 		    	return output
 	    	end
-		def collect_fluentgems()
-			output = @workdir+'/fluentgem_list.output'
+		def collect_tdgems()
+			output = @workdir+'/tdgem_list.output'
                         stdout, stderr, status = Open3.capture3("td-agent-gem list | grep fluent")
-                        File.open(@workdir+output, 'w') do |f|
+                        File.open(output, 'w') do |f|
                                 f.puts(stdout)
                         end
                         return output

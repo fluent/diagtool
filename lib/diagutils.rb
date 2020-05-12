@@ -67,6 +67,10 @@ module Diagtool
 			tdconf = c.collect_tdconf()
 			diaglogger_info("[Collect] config file is stored in #{tdconf}")
 
+			diaglogger_info("[Collect] Collecting td-agent gem information...")
+                        tdgem = c.collect_tdgems()
+                        diaglogger_info("[Collect] config file is stored in #{tdconf}")
+
 			diaglogger_info("[Collect] Collecting config file of OS log...")
                         oslog = c.collect_oslog()
 			if @conf[:mask] == 'yes'
@@ -85,7 +89,7 @@ module Diagtool
 			elsif system('which ntpq > /dev/null 2>&1')
 				ntp = c.collect_ntp(command="ntp")
 			else
-				diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig netstat")
+				diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig date/time information")
 			end
 			diaglogger_info("[Collect] date/time information is stored in #{ntp}")
 			
