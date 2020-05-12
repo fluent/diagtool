@@ -69,7 +69,7 @@ module Diagtool
 
 			diaglogger_info("[Collect] Collecting td-agent gem information...")
                         tdgem = c.collect_tdgems()
-                        diaglogger_info("[Collect] config file is stored in #{tdconf}")
+                        diaglogger_info("[Collect] td-agent gem information is stored in #{tdgem}")
 
 			diaglogger_info("[Collect] Collecting config file of OS log...")
                         oslog = c.collect_oslog()

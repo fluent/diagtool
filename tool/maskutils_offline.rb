@@ -15,7 +15,7 @@ hash_seed = ''
 exlist= Array.new
 
 opt = OptionParser.new
-opt.banner = "Usage: #{$0} -i INPUT_FILE -m {yes | no} -e {word1,[word2...]} -f {listfile} -s {hash seed}"
+opt.banner = "Usage: #{$0} -i INPUT_FILE -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}"
 opt.on('-i','--input FILE', String, 'Input file') { |i|
 	if File.exist?(i)
 		input_file = i 
@@ -33,8 +33,8 @@ opt.on('-m','--mask YES|NO', String, 'Enable mask function (Default=True)') { |m
 		exit!
 	end
 }
-opt.on('-e','--exclude-list LIST', Array, 'Provide a list of exclude words which will to be masked (Default=None)') { |e| exlist += e } 
-opt.on('-f','--exclude-file FILE', String, 'provide a file which describes a List of exclude words (Default=None)') { |f|
+opt.on('-w','--word-list LIST', Array, 'Provide a list of user-defined words which will to be masked (Default=None)') { |w| exlist += e } 
+opt.on('-f','--word-file FILE', String, 'provide a file which describes a List of user-defined words (Default=None)') { |f|
 	if File.exist?(f)
 		File.readlines(f).each do  |l|
 			exlist.append(l.gsub(/\n/,''))
