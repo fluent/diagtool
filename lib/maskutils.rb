@@ -23,11 +23,11 @@ require 'json'
 module Diagtool
 	class MaskUtils
 		def initialize(conf, log_level)
-			@exlist = conf[:exlist]
+			@words = conf[:words]
 		    	@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
                         	"#{datetime}: [Maskutils] [#{severity}] #{msg}\n"
                     	})
-		    	@logger.debug("Initialize Maskutils: exlit = #{conf[:exlist]}")
+		    	@logger.debug("Initialize Maskutils: sanitized word = #{conf[:words]}")
 			@hash_seed = conf[:seed]
 			@id = {
 				:fid =>'',
@@ -161,14 +161,14 @@ module Diagtool
 			is_mask = false
 			if str.include?(">")
 				str = str.gsub(">",'')
-				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(str)
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(str)
 				str_m = chunk_mask + ">" if is_mask
 			elsif str.include?("]")
                         	str = str.gsub("]",'')
-				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(str)
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(str)
 				str_m = chunk_mask + "]" if is_mask
 			else
-				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(str)
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(str)
 				str_mask = chunk_mask if is_mask
 			end
 			return is_mask, str_mask
@@ -183,13 +183,13 @@ module Diagtool
                      			cnt_address = 0
                        			loop do
                     				if address[cnt_address].include?("]")
-							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub(']',''))
+							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(address[cnt_address].gsub(']',''))
 							address[cnt_address] = chunk_mask + "]" if is_mask
                      				elsif address[cnt_address].include?(">")
-							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub('>',''))
+							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(address[cnt_address].gsub('>',''))
 							address[cnt_address] = chunk_mask + ">" if is_mask
                         			else
-							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(address[cnt_address])
+							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(address[cnt_address])
 							address[cnt_address] = chunk_mask if is_mask
                     				end
                         			cnt_address+=1
@@ -198,13 +198,13 @@ module Diagtool
                     			url[cnt_url] = address.join(':')
               	    		else
                   			if url[cnt_url].include?("]")
-						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub(']',''))
+						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(url[cnt_url].gsub(']',''))
                          			url[cnt_url] = chunk_mask + "]" if is_mask
 					elsif url[cnt_url].include?(">")
-						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub('>',''))
+						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(url[cnt_url].gsub('>',''))
                           			url[cnt_url] = chunk_mask + ">" if is_mask
                       			else
-						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(url[cnt_url])
+						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(url[cnt_url])
                             			url[cnt_url] = chunk_mask if is_mask
                        			end
 				end
@@ -220,7 +220,7 @@ module Diagtool
 			l = str.split('=') ## Mask host=<address:ip/hostname> or bind=<address: ip/hostname>
 			i = 0
 			loop do
-				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(l[i])
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(l[i])
                 		l[i] = chunk_mask if is_mask
                                 i+=1
                                 break if i >= l.length || is_mask == true
@@ -233,7 +233,7 @@ module Diagtool
 			l = str.split(':')
 			i = 0
 			loop do
-				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(l[i])
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(l[i])
 				l[i] = chunk_mask if is_mask
 				i+=1
 				break if i >= l.length || is_mask == true
@@ -247,7 +247,7 @@ module Diagtool
 			l = str.split('/')
                    	i = 0
                     	loop do
-				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(l[i])
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_words(l[i])
 				l[i] = chunk_mask if is_mask
                               	i+=1
                              	break if i >= l.length || is_mask == true
@@ -264,10 +264,9 @@ module Diagtool
 			!!(str =~ /^\b(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.){2,}([A-Za-z]|[A-Za-z][A-Za-z\-]*[A-Za-z]){2,}$/)
 			#!!(str =~ /^\b(?=^.{1,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)/)
 		end
-	    	def is_exlist?(str)
+	    	def is_words?(str)
 		    	value = false
-		    	exlist = @exclude_list.to_a
-		    	exlist.each do | l |
+		    	@words.each do | l |
 				if str == l
 					value = true
 				    	break
@@ -275,7 +274,7 @@ module Diagtool
 		    	end
 		    	return value
 	    	end
-	    	def mask_ipv4_fqdn_exlist(str)
+	    	def mask_ipv4_fqdn_words(str)
 		 	str = str.to_s
 			mtype = ''
 			is_mask = false
@@ -287,9 +286,9 @@ module Diagtool
                                 str = str.gsub(/\\\"|\'|\"|\\\'/,'')
                                 mtype = 'FQDN'
 				is_mask = true
-		        elsif is_exlist?(str.gsub(/\\\"|\'|\"|\\\'/,''))
+		        elsif is_words?(str.gsub(/\\\"|\'|\"|\\\'/,''))
                                 str = str.gsub(/\\\"|\'|\"|\\\'/,'')
-                                mtype = 'ExWord'
+                                mtype = 'Word'
 				is_mask =true
 		    	end
 			if is_mask
@@ -305,10 +304,6 @@ module Diagtool
 			@masklog[@id[:fid]][uid]['original'] = str
 			@masklog[@id[:fid]][uid]['mask'] = str_mask
 		end
-		#def get_masklog()
-		#	masklog_json = JSON.pretty_generate(@masklog)
-		#	return masklog_json
-		#end
 		def export_masklog(output_file)
 			masklog_json = JSON.pretty_generate(@masklog)
 			File.open(output_file, 'w') do |f|

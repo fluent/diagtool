@@ -1,0 +1,10 @@
+   Static hostname: centos8101
+         Icon name: computer-vm
+           Chassis: vm
+        Machine ID: 9b0631ee2e5e45b7a51a4820c2083417
+           Boot ID: a11899fdb8e44527a9dc8de40177372e
+    Virtualization: oracle
+  Operating System: CentOS Linux 8 (Core)
+       CPE OS Name: cpe:/o:centos:centos:8
+            Kernel: Linux 4.18.0-147.el8.x86_64
+      Architecture: x86-64
