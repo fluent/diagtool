@@ -1,8 +1,0 @@
-Tue May 12 17:55:27 EDT 2020
-210 Number of sources = 4
-MS Name/IP address         Stratum Poll Reach LastRx Last sample               
-===============================================================================
-^- nono.com                      2   9   377   243  +8829us[+8518us] +/-  116ms
-^- mail.picquenot.com            6  10   377    22  -7777us[-7777us] +/-  218ms
-^- docker01.rondie.nl            3   9   377   516  +1236us[ +946us] +/-  158ms
-^* clock.sjc.he.net              1  10   377    59  -2423us[-2747us] +/- 9953us
