@@ -18,8 +18,6 @@ The scope of data collection:<br>
 
 
 ## Usage
-
-### Online Tool
 Users can collect configuration/log files and create masked file automatically by running the online tool.
 The online tool provides the function to get the file path of configuration and log files by parsing the systemctl.
 
