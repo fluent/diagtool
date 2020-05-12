@@ -23,7 +23,7 @@ require 'json'
 module Diagtool
 	class MaskUtils
 		def initialize(conf, log_level)
-			load_exlist(conf[:exlist])
+			@exlist = conf[:exlist]
 		    	@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
                         	"#{datetime}: [Maskutils] [#{severity}] #{msg}\n"
                     	})
@@ -159,26 +159,22 @@ module Diagtool
 	    	end
 	    	def mask_direct_pattern(str)
 			is_mask = false
-			before_mask = ''
-			after_mask = ''
 			if str.include?(">")
 				str = str.gsub(">",'')
-				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(str)
-				str_m = after_mask + ">" if is_mask
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(str)
+				str_m = chunk_mask + ">" if is_mask
 			elsif str.include?("]")
                         	str = str.gsub("]",'')
-				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(str)
-				str_m = after_mask + "]" if is_mask
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(str)
+				str_m = chunk_mask + "]" if is_mask
 			else
-				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(str)
-				str_m = after_mask if is_mask
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(str)
+				str_mask = chunk_mask if is_mask
 			end
-			return is_mask, str_m
+			return is_mask, str_mask
 	    	end	
 	    	def mask_url_pattern(str)
 			is_mask = false
-                        before_mask = ''
-                        after_mask = ''
 			url = str.split('://')
              		cnt_url = 0
                 	loop do
@@ -187,14 +183,14 @@ module Diagtool
                      			cnt_address = 0
                        			loop do
                     				if address[cnt_address].include?("]")
-							is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub(']',''))
-							address[cnt_address] = after_mask + "]" if is_mask
+							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub(']',''))
+							address[cnt_address] = chunk_mask + "]" if is_mask
                      				elsif address[cnt_address].include?(">")
-							is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub('>',''))
-							address[cnt_address] = after_mask + ">" if is_mask
+							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(address[cnt_address].gsub('>',''))
+							address[cnt_address] = chunk_mask + ">" if is_mask
                         			else
-							is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(address[cnt_address])
-							address[cnt_address] = after_mask if is_mask
+							is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(address[cnt_address])
+							address[cnt_address] = chunk_mask if is_mask
                     				end
                         			cnt_address+=1
                         			break if cnt_address >= address.length || is_mask == true
@@ -202,68 +198,63 @@ module Diagtool
                     			url[cnt_url] = address.join(':')
               	    		else
                   			if url[cnt_url].include?("]")
-						is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub(']',''))
-                         			url[cnt_url] = after_mask + "]" if is_mask
+						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub(']',''))
+                         			url[cnt_url] = chunk_mask + "]" if is_mask
 					elsif url[cnt_url].include?(">")
-						is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub('>',''))
-                          			url[cnt_url] = after_mask + ">" if is_mask
+						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(url[cnt_url].gsub('>',''))
+                          			url[cnt_url] = chunk_mask + ">" if is_mask
                       			else
-						is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(url[cnt_url])
-                            			url[cnt_url] = after_mask if is_mask
+						is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(url[cnt_url])
+                            			url[cnt_url] = chunk_mask if is_mask
                        			end
 				end
                         	cnt_url+=1
                         	break if cnt_url >= url.length || is_mask == true
           		end
-			str_m = url.join('://')
-			str_m << ":" if str.end_with?(':')
-			return is_mask, str_m
+			str_mask = url.join('://')
+			str_mask << ":" if str.end_with?(':')
+			return is_mask, str_mask
 	    	end
 	    	def mask_equal_pattern(str)
 			is_mask = false
-                        before_mask = ''
-                        after_mask = ''
 			l = str.split('=') ## Mask host=<address:ip/hostname> or bind=<address: ip/hostname>
 			i = 0
 			loop do
-				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[i])
-                		l[i] = after_mask if is_mask
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(l[i])
+                		l[i] = chunk_mask if is_mask
                                 i+=1
                                 break if i >= l.length || is_mask == true
 			end
-                	return is_mask, l.join('=')
+			str_mask = l.join('=')
+                	return is_mask, str_mask
 	    	end
 	    	def mask_colon_pattern(str)
 			is_mask = false
-                        before_mask = ''
-                        after_mask = ''
 			l = str.split(':')
 			i = 0
 			loop do
-				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[i])
-				l[i] = after_mask if is_mask
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(l[i])
+				l[i] = chunk_mask if is_mask
 				i+=1
 				break if i >= l.length || is_mask == true
 			end
-			str_m = l.join(':')
-			str_m << ":" if str.end_with?(':')
-                	return is_mask, str_m
+			str_mask = l.join(':')
+			str_mask << ":" if str.end_with?(':')
+                	return is_mask, str_mask
 	    	end
 		def mask_slash_pattern(str)
 			is_mask = false
-                        before_mask = ''
-                        after_mask = ''
 			l = str.split('/')
                    	i = 0
                     	loop do
-				is_mask, before_mask, after_mask = mask_ipv4_fqdn_exlist(l[i])
-				l[i] = after_mask if is_mask
+				is_mask, chunk, chunk_mask = mask_ipv4_fqdn_exlist(l[i])
+				l[i] = chunk_mask if is_mask
                               	i+=1
                              	break if i >= l.length || is_mask == true
                     	end
-			str_m = l.join('/')
-                        str_m << ":" if str.end_with?(':')
-			return is_mask, str_m
+			str_mask = l.join('/')
+                        str_mask << ":" if str.end_with?(':')
+			return is_mask, str_mask
 		end
 	    	def is_ipv4?(str)
 			!!(str =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)
@@ -273,10 +264,6 @@ module Diagtool
 			!!(str =~ /^\b(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.){2,}([A-Za-z]|[A-Za-z][A-Za-z\-]*[A-Za-z]){2,}$/)
 			#!!(str =~ /^\b(?=^.{1,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)/)
 		end
-	    	def load_exlist(list)
-			@exclude_list = Array.new
-		    	@exclude_list = list
-	    	end
 	    	def is_exlist?(str)
 		    	value = false
 		    	exlist = @exclude_list.to_a
@@ -291,78 +278,32 @@ module Diagtool
 	    	def mask_ipv4_fqdn_exlist(str)
 		 	str = str.to_s
 			mtype = ''
-			is_mask = true
-		    	if is_ipv4?(str)
-				str_new = str
+			is_mask = false
+		    	if is_ipv4?(str.gsub(/\\\"|\'|\"|\\\'/,''))
+				str = str.gsub(/\\\"|\'|\"|\\\'/,'')
 				mtype = 'ipv4'
-		    	elsif is_ipv4?(str.gsub('\"',''))
-				str_new = str.gsub('\"','')
-				mtype = 'ipv4'
-		    	elsif is_ipv4?(str.gsub('\'',''))
-				str_new =  str.gsub('\'','')
-				mtype = 'ipv4'
-		    	elsif is_ipv4?(str.gsub('"',''))
-				str_new = str.gsub('"','')
-				mtype = 'ipv4'
-		    	elsif is_ipv4?(str.gsub(/\"/,''))
-				str_new = str.gsub(/\"/,'')
-				mtype = 'ipv4'
-		    	elsif is_ipv4?(str.gsub('//',''))
-				str_new = str.gsub('//','')
-				mtype = 'ipv4'
-		    	elsif is_fqdn?(str)
-				str_new = str
-				mtype = 'fqdn'
-		    	elsif is_fqdn?(str.gsub('\"',''))
-			    	str_new = str.gsub('\"','')
-				mtype = 'fqdn'
-		    	elsif is_fqdn?(str.gsub('\'',''))
-				str_new = str.gsub('\'','')
+				is_mask = true
+			elsif is_fqdn?(str.gsub(/\\\"|\'|\"|\\\'/,''))
+                                str = str.gsub(/\\\"|\'|\"|\\\'/,'')
                                 mtype = 'fqdn'
-		    	elsif is_fqdn?(str.gsub('"',''))
-				str_new = str.gsub('"','')
-                                mtype = 'fqdn'
-		    	elsif is_fqdn?(str.gsub(/\"/,''))
-				str_new = str.gsub(/\"/,'')
-				mtype = 'fqdn'
-		    	elsif is_fqdn?(str.gsub('//',''))
-				str_new = str.gsub('//','')
-                                mtype = 'fqdn'
-		    	elsif is_exlist?(str)
-				str_new = str
+				is_mask = true
+		        elsif is_exlist?(str.gsub(/\\\"|\'|\"|\\\'/,''))
+                                str = str.gsub(/\\\"|\'|\"|\\\'/,'')
                                 mtype = 'exlist'
-		    	elsif is_exlist?(str.gsub('\"',''))
-				str_new = str.gsub('\"','')
-				mtype = 'exlist'
-		    	elsif is_exlist?(str.gsub('\'',''))
-				str_new = str.gsub('\'','')
-                                mtype = 'exlist'
-		    	elsif is_exlist?(str.gsub('"',''))
-				str_new = str.gsub('"','')
-                                mtype = 'exlist'
-		    	elsif is_exlist?(str.gsub(/\"/,''))
-				str_new = str.gsub(/\"/,'')
-				mtype = 'exlist'
-		    	elsif is_exlist?(str.gsub('//',''))
-				str_new = str.gsub('//','')
-                                mtype = 'exlist'
-		    	else
-				str_new = str
-				mtype = ''
-			    	is_mask = false
+				is_mask =true
 		    	end
 			if is_mask
-				str_hash = mtype + '_md5_' + Digest::MD5.hexdigest(@hash_seed + str_new)
-				put_masklog(str_new, str_hash)
+				str_mask = mtype + '_md5_' + Digest::MD5.hexdigest(@hash_seed + str)
+				put_masklog(str, str_mask)
 			else
-				str_hash = str_new
+				str_mask = str
 			end
-			return is_mask, str_new, str_hash
+			return is_mask, str, str_mask
 		end
-		def put_masklog(original, hash)
+		def put_masklog(str, str_mask)
 			uid = "Line#{@id[:lid]}-#{@id[:cid]}"
-			@masklog[@id[:fid]][uid]['original'] = original
-			@masklog[@id[:fid]][uid]['hash'] = hash
+			@masklog[@id[:fid]][uid]['original'] = str
+			@masklog[@id[:fid]][uid]['mask'] = str_mask
 		end
 		def get_masklog()
 			masklog_json = JSON.pretty_generate(@masklog)
