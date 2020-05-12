@@ -1,0 +1,46 @@
+# Logfile created on 2020-05-12 17:55:26 -0400 by logger.rb/61378
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] Parsing command options...
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO]    Option : Output directory = ../output
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO]    Option : Mask = no
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO]    Option : Word list = []
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO]    Option : Hash Seed = 
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] Initializing parameters...
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect] Loading the environment parameters...
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect]    operating system = CentOS Linux 8 (Core)
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect]    kernel version = Linux 4.18.0-147.el8.x86_64
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect]    td-agent conf path = /etc/td-agent/
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect]    td-agent conf file = td-agent.conf
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect]    td-agent log path = /var/log/td-agent/
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect]    td-agent log = td-agent.log
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect] Collecting log files of td-agent...
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect] log files of td-agent are stored in ["../output/20200512175526/var/log/td-agent/td-agent.log-20200508.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200509.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200304.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200311.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200318.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200319.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200320.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200321.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200322.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200323.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200330.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200331.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200401.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200402.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200403.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200404.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200405.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200406.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200407.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200408.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200409.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200410.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200411.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200423.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200424.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200425.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200426.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200427.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200507.gz", "../output/20200512175526/var/log/td-agent/td-agent.log-20200512", "../output/20200512175526/var/log/td-agent/td-agent.log"]
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect] Collecting config file of td-agent...
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect] config file is stored in ../output/20200512175526/etc/td-agent/td-agent.conf
+2020-05-12 17:55:26 -0400: [Diagtool] [INFO] [Collect] Collecting td-agent gem information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] config file is stored in ../output/20200512175526/etc/td-agent/td-agent.conf
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] Collecting config file of OS log...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] config file is stored in ../output/20200512175526/var/log/messages
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] Collecting OS memory information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] config file is stored in ../output/20200512175526/meminfo.output
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] Collecting date/time information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] date/time information is stored in ../output/20200512175526/ntp_info.output
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] Collecting netstat information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] netstat information is stored in ../output/20200512175526/netstat_n.output and ../output/20200512175526/netstat_s.output
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] Collecting systctl information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] sysctl information is stored in ../output/20200512175526/etc/sysctl.conf
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid] Validating systctl information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_somaxconn => 1024 is correct (recommendation is 1024)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_netdev_max_backlog => 5000 is correct (recommendation is 5000)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_rmem_max => 16777216 is correct (recommendation is 16777216)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_wmem_max => 16777216 is correct (recommendation is 16777216)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_wmem => ["4096", "12582912", "16777216"] is correct (recommendation is ["4096", "12582912", "16777216"])
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_rmem => ["4096", "12582912", "16777216"] is correct (recommendation is ["4096", "12582912", "16777216"])
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_max_syn_backlog => 8096 is correct (recommendation is 8096)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_slow_start_after_idle => 0 is correct (recommendation is 0)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_tw_reuse => 1 is correct (recommendation is 1)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_ip_local_port_range => ["10240", "65535"] is correct (recommendation is ["10240", "65535"])
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] Collecting ulimit information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] ulimit information is stored in ../output/20200512175526/ulimit_n.output
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid] Validating ulimit information...
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Valid]    ulimit => 65536 is correct (recommendation is >65535)
+2020-05-12 17:55:27 -0400: [Diagtool] [INFO] [Collect] Generate tar file ../output/diagout-20200512175526.tar.gz

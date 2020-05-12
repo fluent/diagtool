@@ -41,7 +41,7 @@ module Diagtool
 			diaglogger_info("Parsing command options...")
                         diaglogger_info("   Option : Output directory = #{@conf[:output_dir]}")
                         diaglogger_info("   Option : Mask = #{@conf[:mask]}")
-                        diaglogger_info("   Option : Exclude list = #{@conf[:exlist]}")
+                        diaglogger_info("   Option : Word list = #{@conf[:words]}")
                         diaglogger_info("   Option : Hash Seed = #{@conf[:seed]}")
 		end
 		def diagtool()
@@ -145,18 +145,20 @@ module Diagtool
                 			end
         			end
 			end
-			diaglogger_info("[Mask] Export mask log file : #{@masklog}")
-			m.export_masklog(@masklog)
+			if @conf[:mask] == 'yes'
+				diaglogger_info("[Mask] Export mask log file : #{@masklog}")
+				m.export_masklog(@masklog)
+			end
 			tar_file = c.compress_output()
 			diaglogger_info("[Collect] Generate tar file #{tar_file}")
 		end
 
 		def parse_diagconf(params)
 			options = {
-        			:output_dir => '../output',
-        			:mask => 'yes',
-        			:exlist => [],
-        			:exfile => '',
+        			:output_dir => '',
+        			:mask => 'no',
+        			:words => [],
+        			:wfile => '',
         			:seed => ''
        	 		}
         		if params[:output] != nil
@@ -165,9 +167,11 @@ module Diagtool
                 		else
                         		raise "output directory '#{output_dir}' does not exist"
                 		end
+			else
+				raise "output directory '-o' must be specified"
         		end
         		if params[:mask] == nil
-                		options[:mask] = 'yes'
+                		options[:mask] = 'no'
         		else
                 		if params[:mask] == 'yes' || params[:mask] == 'no'
                         		options[:mask] = params[:mask]
@@ -175,18 +179,18 @@ module Diagtool
                         		raise "invalid arguments '#{params[:mask]}' : input of '-m|--mask' should be 'yes' or 'no'"
                 		end
         		end
-        		options[:exlist] = params[:"exclude-list"] if params[:"exclude-list"] != nil
-        		if params[:"exclude-file"] != nil
-                		f = params[:"exclude-file"]
+        		options[:words] = params[:"word-list"] if params[:"word-list"] != nil
+        		if params[:"word-file"] != nil
+                		f = params[:"word-file"]
                 		if File.exist?(f)
                         		File.readlines(f).each do  |l|
-                                		options[:exlist].append(l.gsub(/\n/,''))
+                                		options[:words].append(l.gsub(/\n/,''))
                         		end
                 		else
-                        		raise "#{params[:"exclude-file"]} : No such file or directory"
+                        		raise "#{params[:"word-file"]} : No such file or directory"
                 		end
         		end
-			options[:exlist] = options[:exlist].uniq 
+			options[:words] = options[:words].uniq 
         		options[:seed] = params[:"hash-seed"] if params[:"hash-seed"] != nil
 			return options	
 		end
