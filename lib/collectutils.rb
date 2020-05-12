@@ -24,21 +24,16 @@ module Diagtool
 		    	@logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
   				"#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
 		    	})
-		    	#@time = Time.new
-		    	#@time_format = @time.strftime("%Y%m%d%0k%M%0S")
-		    	#@output_dir = output_dir
 			@time_format = conf[:time]
 			@output_dir = conf[:output_dir]
-
 		    	@workdir = conf[:workdir]
-		    	FileUtils.mkdir_p(@workdir)
 			
 			@tdenv = get_tdenv()
 		    	@tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
 		    	@tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
 		    	@tdlog =  @tdenv['TD_AGENT_LOG_FILE'].split('/')[-1]
 		    	@tdlog_path = @tdenv['TD_AGENT_LOG_FILE'].gsub(@tdlog,'')
-			
+
 			@osenv = get_osenv()
 		    	@oslog_path = '/var/log/'
 		    	@oslog = 'messages'
@@ -117,24 +112,49 @@ module Diagtool
 		    	end
 		    	return output
 	    	end
-		def collect_netstat()
+		def collect_meminfo()
+                        output = @workdir+'/meminfo.output'
+                        stdout, stderr, status = Open3.capture3("cat /proc/meminfo")
+                        File.open(output, 'w') do |f|
+                                f.puts(stdout)
+                        end
+                        return output
+                end
+		def collect_netstat_n()
 			output = @workdir+'/netstat_n.output'
                         stdout, stderr, status = Open3.capture3("netstat -n")
+                        File.open(output, 'w') do |f|
+                                f.puts(stdout)
+                        end
+			return output
+		end
+                def collect_netstat_s()
+                        output = @workdir+'/netstat_s.output'
+                        stdout, stderr, status = Open3.capture3("netstat -s")
                         File.open(output, 'w') do |f|
                                 f.puts(stdout)
                         end
                         return output
                 end
 	    	def collect_ntp(command)
+			output = @workdir+'/ntp_info.output'
 		    	stdout_date, stderr_date, status_date = Open3.capture3("date")
 		    	stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources") if command == "chrony"
 		    	stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("ntpq -p") if command == "ntp"
-		    	File.open(@workdir+'/ntp_info.output', 'w') do |f|
+		    	File.open(output, 'w') do |f|
 			    	f.puts(stdout_date)
 			    	f.puts(stdout_ntp)
 		    	end
-		    	return @workdir+'/ntp_info.output'
+		    	return output
 	    	end
+		def collect_fluentgems()
+			output = @workdir+'/fluentgem_list.output'
+                        stdout, stderr, status = Open3.capture3("td-agent-gem list | grep fluent")
+                        File.open(@workdir+output, 'w') do |f|
+                                f.puts(stdout)
+                        end
+                        return output
+                end
 	    	def compress_output()
 			Dir.chdir(@output_dir)
 		    	#tar_file = @output_dir+'/diagout-'+@time_format+'.tar.gz'

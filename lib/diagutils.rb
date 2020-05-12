@@ -74,19 +74,33 @@ module Diagtool
 				oslog = m.mask_tdlog(oslog, clean = true)
 			end
                         diaglogger_info("[Collect] config file is stored in #{oslog}")
+			
+			diaglogger_info("[Collect] Collecting OS memory information...")
+			meminfo = c.collect_meminfo()
+                        diaglogger_info("[Collect] config file is stored in #{meminfo}")
 
 			diaglogger_info("[Collect] Collecting date/time information...")
-			ntp = c.collect_ntp(command="chrony")
+			if system('which chronyc > /dev/null 2>&1')
+				ntp = c.collect_ntp(command="chrony")
+			elsif system('which ntpq > /dev/null 2>&1')
+				ntp = c.collect_ntp(command="ntp")
+			else
+				diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig netstat")
+			end
 			diaglogger_info("[Collect] date/time information is stored in #{ntp}")
 			
 			diaglogger_info("[Collect] Collecting netstat information...")
-                        netstat = c.collect_netstat()
-			if @conf[:mask] == 'yes'
-				diaglogger_info("[Mask] Masking netstat file : #{netstat}...")
-				netstat = m.mask_tdlog(netstat, clean = true)
+                        if system('which netstat > /dev/null 2>&1')
+				netstat_n = c.collect_netstat_n()
+				netstat_s = c.collect_netstat_s()
+				if @conf[:mask] == 'yes'
+					diaglogger_info("[Mask] Masking netstat file : #{netstat_n}...")
+					netstat_n = m.mask_tdlog(netstat_n, clean = true)
+				end
+                        	diaglogger_info("[Collect] netstat information is stored in #{netstat_n} and #{netstat_s}")		
+			else
+				diaglogger_warn("[Collect] netstat does not exist. skip collectig netstat")
 			end
-                        diaglogger_info("[Collect] netstat information is stored in #{netstat}")		
-
 			diaglogger_info("[Collect] Collecting systctl information...")
 			sysctl = c.collect_sysctl()
 			diaglogger_info("[Collect] sysctl information is stored in #{sysctl}")

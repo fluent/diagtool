@@ -281,19 +281,19 @@ module Diagtool
 			is_mask = false
 		    	if is_ipv4?(str.gsub(/\\\"|\'|\"|\\\'/,''))
 				str = str.gsub(/\\\"|\'|\"|\\\'/,'')
-				mtype = 'ipv4'
+				mtype = 'IPv4'
 				is_mask = true
 			elsif is_fqdn?(str.gsub(/\\\"|\'|\"|\\\'/,''))
                                 str = str.gsub(/\\\"|\'|\"|\\\'/,'')
-                                mtype = 'fqdn'
+                                mtype = 'FQDN'
 				is_mask = true
 		        elsif is_exlist?(str.gsub(/\\\"|\'|\"|\\\'/,''))
                                 str = str.gsub(/\\\"|\'|\"|\\\'/,'')
-                                mtype = 'exlist'
+                                mtype = 'ExWord'
 				is_mask =true
 		    	end
 			if is_mask
-				str_mask = mtype + '_md5_' + Digest::MD5.hexdigest(@hash_seed + str)
+				str_mask = mtype + '_' + Digest::MD5.hexdigest(@hash_seed + str)
 				put_masklog(str, str_mask)
 			else
 				str_mask = str
@@ -305,13 +305,14 @@ module Diagtool
 			@masklog[@id[:fid]][uid]['original'] = str
 			@masklog[@id[:fid]][uid]['mask'] = str_mask
 		end
-		def get_masklog()
-			masklog_json = JSON.pretty_generate(@masklog)
-			return masklog_json
-		end
+		#def get_masklog()
+		#	masklog_json = JSON.pretty_generate(@masklog)
+		#	return masklog_json
+		#end
 		def export_masklog(output_file)
+			masklog_json = JSON.pretty_generate(@masklog)
 			File.open(output_file, 'w') do |f|
-                                f.puts(get_masklog())
+                                f.puts(masklog_json)
                         end
 		end 
     end
