@@ -5,13 +5,15 @@ The scope of data collection:<br>
 - TD Agent information
   - configuration files (*)
   - log files (*)
-  - fluentd gem list
+  - td-agent environment values
+  - installed td-agent-gem list
 - OS information
   - OS log file
   - OS parameters
+    - OS and kernel version
     - time/date information
-    - user limits
-    - kernel network parameters
+    - maximum number of file descriptor(ulimit)
+    - kernel network parameters(sysctl)
   - network conectivity status/stats
   - memory information
 <br>  
