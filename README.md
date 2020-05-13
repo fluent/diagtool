@@ -14,6 +14,7 @@ The scope of data collection:<br>
     - kernel network parameters
   - network conectivity status/stats
   - memory information
+<br>  
 (*) The diagtool automatically gather the path of td-agent configuration files and log files and use them during data collection. 
 
 ## Prerequisite
@@ -96,17 +97,30 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Export mask log file : ./mask_20200512182119.json
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Generate tar file /tmp/work1/diagout-20200512182119.tar.gz
 ```
-#### Mask sample - IP address: ipv4_md5_{md5hash}
+## Mask
+When run diagtool with mask option, the log of mask is also created in <execute directory>/mask_{timestamp}.json. Users are able to confirm how the mask was generated on each files. 
+<br>
+#### Mask sample - IP address: IPv4_{md5hash}
 ```
-2020-02-21 19:22:51 -0500 [info]: [output_system_forward] adding forwarding server ipv4_md5_28b515a0b563a5ac476cc331b75963d0:24224
+    "Line112-8": {
+      "original": "12.167.151.1",
+      "mask": "IPv4_69c29ed8d9d370ac12d53ee0c34a5668"
+    },
 ```
-#### Mask sample - Hostname address: fqdn_md5_{md5hash}
+#### Mask sample - Hostname address: FQDN_{md5hash}
 ```
-2020-02-22 00:49:35 -0500 [info]: adding match pattern=fqdn_md5_22db84b867029dac7fe37db6b9e1efbe type="forward"
+    "Line0-10": {
+      "original": "www.rsyslog.com",
+      "mask": "FQDN_fef1c6ae5d66c6de1e395b2010777be5"
+    },
 ```
-#### Mask sample - User defined keywords: exlist_md5_{md5hash}
+#### Mask sample - User defined keywords: Word_{md5hash}
 ```
-<match exlist_md5_59d1a1c205305f383f55cc245871f89f>
+    "Line2-4": {
+      "original": "centos8101",
+      "mask": "Word_5160bd119ec593cf4bd34fb4cb855041"
+    },
+
 ```
 
 ## Tested Environment
