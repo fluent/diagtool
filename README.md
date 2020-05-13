@@ -33,7 +33,7 @@ Usage: diagtool.rb -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfil
     -s, --hash-seed seed             provide a word which will be used when generate the mask (Optional : Default=None)
 ```
 The list of user-defined words can be specified both -e option and -f option.
-The format of user-defined words list file specified in -f option should be followed manner.
+The format of user-defined words list file specified in -f option should be followed format.
 ```
 # cat word_list_sample
 centos8101
@@ -127,7 +127,7 @@ When run diagtool with mask option, the log of mask is also created in <execute 
 
 ## Tested Environment
 - OS : CentOS 8.1
-- Fluentd : td-agent version 3
+- Fluentd : td-agent version 3  
   https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3
 
 
