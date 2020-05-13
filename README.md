@@ -100,7 +100,7 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Generate tar file /tmp/work1/diagout-20200512182119.tar.gz
 ```
 ## Mask Function
-When run diagtool with mask option, the log of mask is also created in <execute directory>/mask_{timestamp}.json. Users are able to confirm how the mask was generated on each files. 
+When run diagtool with mask option, the log of mask is also created in '<execute directory>/mask_{timestamp}.json'. Users are able to confirm how the mask was generated on each files. 
 <br>
 #### Mask sample - IP address: IPv4_{md5hash}
 ```
