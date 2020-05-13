@@ -1,4 +1,4 @@
-# Diagnostic Tool
+# Fluentd Diagnostic Tool
 
 The diagtool enable users to automate the date collection which is required for trouble shooting. The data collected by diagtool include the configuration and log files of the td-agent and diagnostic information of operating system such as network and memory status and stats. In some cases, configuration and log files contains the security sensitive information, such as IP addresses and Hostname. The diagtool also provides the functions to generate mask on IP addresses, Hostname(in FQDN style) and user defined keywords described in the collected data.<br> 
 The scope of data collection:<br>
@@ -60,7 +60,7 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] Collecting config file of td-agent...
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] config file is stored in /tmp/work1/20200512182119/etc/td-agent/td-agent.conf
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] Collecting td-agent gem information...
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] config file is stored in /tmp/work1/20200512182119/etc/td-agent/td-agent.conf
+2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] td-agent gem information is stored in /tmp/work1/20200512182119/etc/td-agent/tdgem_list.output
 2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] Collecting config file of OS log...
 2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Mask] Masking OS log file : /tmp/work1/20200512182119/var/log/messages...
 2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] config file is stored in /tmp/work1/20200512182119/var/log/messages.mask
@@ -97,7 +97,7 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Export mask log file : ./mask_20200512182119.json
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Generate tar file /tmp/work1/diagout-20200512182119.tar.gz
 ```
-## Mask
+## Mask Function
 When run diagtool with mask option, the log of mask is also created in <execute directory>/mask_{timestamp}.json. Users are able to confirm how the mask was generated on each files. 
 <br>
 #### Mask sample - IP address: IPv4_{md5hash}
@@ -125,8 +125,7 @@ When run diagtool with mask option, the log of mask is also created in <execute 
 
 ## Tested Environment
 - OS : CentOS 8.1
-- Fluentd : td-agent version 2
+- Fluentd : td-agent version 3
   https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3
-- FluentBit : (TBD)
 
 
