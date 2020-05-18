@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+#
 #
 # Fluentd
 #
@@ -14,12 +16,11 @@
 #    limitations under the License.
 #
 
-#!/usr/bin/ruby
 require 'optparse'
-require '../lib/collectutils'
-require '../lib/maskutils'
-require '../lib/validutils'
-require '../lib/diagutils'
+require 'fluent/diagtool/collectutils'
+require 'fluent/diagtool/maskutils'
+require 'fluent/diagtool/validutils'
+require 'fluent/diagtool/diagutils'
 include Diagtool
 
 params = {}

@@ -16,9 +16,9 @@
 
 require 'logger'
 require 'fileutils'
-require '../lib/collectutils'
-require '../lib/maskutils'
-require '../lib/validutils'
+require 'fluent/diagtool/collectutils'
+require 'fluent/diagtool/maskutils'
+require 'fluent/diagtool/validutils'
 include Diagtool
 
 module Diagtool

@@ -138,15 +138,15 @@ module Diagtool
             end
           elsif contents[i].include?('/')
             is_mask, masked_contents = mask_slash_pattern(contents[i])
-          　if is_mask
-          　  @logger.debug("   Slash Pattern Detected: #{contents[i]} -> #{masked_contents}")
-          　  contents[i] = masked_contents
-          　end
+            if is_mask
+              @logger.debug("   Slash Pattern Detected: #{contents[i]} -> #{masked_contents}")
+              contents[i] = masked_contents
+            end
           else
             is_mask, masked_contents = mask_direct_pattern(contents[i])
-          　if is_mask
+            if is_mask
               @logger.debug("   Direct Pattern Detected: #{contents[i]} -> #{masked_contents}")
-          　  contents[i] = masked_contents
+              contents[i] = masked_contents
             end
           end
         end
@@ -307,7 +307,7 @@ module Diagtool
     def export_masklog(output_file)
       masklog_json = JSON.pretty_generate(@masklog)
       File.open(output_file, 'w') do |f|
-      　　f.puts(masklog_json)
+        f.puts(masklog_json)
       end
     end 
   end
