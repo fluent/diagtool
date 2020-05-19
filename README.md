@@ -1,7 +1,7 @@
 # Fluentd Diagnostic Tool
 
-The diagtool enable users to automate the date collection which is required for trouble shooting. The data collected by diagtool include the configuration and log files of the td-agent and diagnostic information of operating system such as network and memory status and stats. In some cases, configuration and log files contains the security sensitive information, such as IP addresses and Hostname. The diagtool also provides the functions to generate mask on IP addresses, Hostname(in FQDN style) and user defined keywords described in the collected data.<br> 
-The scope of data collection:<br>
+The diagtool enable users to automate the date collection which is required for trouble shooting. The data collected by diagtool include the configuration and log files of the td-agent and diagnostic information of operating system such as network and memory status and stats. In some cases, configuration and log files contains the security sensitive information, such as IP addresses and Hostname. The diagtool also provides the functions to generate mask on IP addresses, Hostname(in FQDN style) and user defined keywords described in the collected data.   
+The scope of data collection:  
 - TD Agent information
   - configuration files (*)
   - log files (*)
@@ -11,18 +11,21 @@ The scope of data collection:<br>
   - OS log file
   - OS parameters
     - OS and kernel version
-    - time/date information
-    - maximum number of file descriptor(ulimit)
+    - time/date information(ntp -q/chronyc sources)
+    - maximum number of file descriptor(ulimit -n)
     - kernel network parameters(sysctl)
-  - network conectivity status/stats
-  - memory information
+  - snapshot of current process(ps)
+  - network conectivity status/stats(netstat -plan/netstat -s)
+  - memory information(/proc/meminfo)
 <br>  
-(*) The diagtool automatically gather the path of td-agent configuration files and log files and use them during data collection. 
+(*) The diagtool automatically gather the path of td-agent configuration files and log files from td-agent daemon and use them during data collection. 
 
 ## Prerequisite
+The diagtool provides support for td-agent based installation running on Linux OS. The td-agent is a stable distribution package of Fluentd.  
+The differences between Fluentd and td-agent are described in followed url:  
+https://www.fluentd.org/faqs
 
-
-## Installation
+## Diagtool Installation
 
 ```
 # gem install fluent-diagtool
@@ -114,8 +117,8 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Generate tar file /tmp/work1/diagout-20200512182119.tar.gz
 ```
 ## Mask Function
-When run diagtool with mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each files. 
-<br>
+When run diagtool with mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each files.  
+The diagtool provides hash-seed option with '-s'. When hash-seed is specified, the mask will be generated with original word and hash-seed so that users could use unique mask value.
 #### Mask sample - IP address: IPv4_{md5hash}
 ```
     "Line112-8": {
