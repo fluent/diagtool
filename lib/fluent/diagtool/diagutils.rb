@@ -28,8 +28,12 @@ module Diagtool
       @time_format = time.strftime("%Y%m%d%0k%M%0S")
       @conf = parse_diagconf(params)
       @conf[:time] = @time_format
-      @conf[:workdir] = @conf[:output_dir] + '/' + @time_format
+      @conf[:workdir] = @conf[:basedir] + '/' + @time_format
+      @conf[:outdir] = @conf[:workdir] + '/output'
+      
       FileUtils.mkdir_p(@conf[:workdir])
+      FileUtils.mkdir_p(@conf[:outdir])
+      
       diaglog = @conf[:workdir] + '/diagtool.output'
       @masklog = './mask_' + @time_format + '.json'
       @logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
@@ -39,11 +43,12 @@ module Diagtool
         "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
       })
       diaglogger_info("Parsing command options...")
-      diaglogger_info("   Option : Output directory = #{@conf[:output_dir]}")
+      diaglogger_info("   Option : Output directory = #{@conf[:basedir]}")
       diaglogger_info("   Option : Mask = #{@conf[:mask]}")
       diaglogger_info("   Option : Word list = #{@conf[:words]}")
       diaglogger_info("   Option : Hash Seed = #{@conf[:seed]}")
     end
+    
     def diagtool()
       loglevel = 'WARN'
       diaglogger_info("Initializing parameters...")
@@ -78,10 +83,14 @@ module Diagtool
         oslog = m.mask_tdlog(oslog, clean = true)
       end
       diaglogger_info("[Collect] config file is stored in #{oslog}")
-			
+
+      diaglogger_info("[Collect] Collecting process information...")
+      meminfo = c.collect_ps_eo()
+      diaglogger_info("[Collect] process informationis stored in #{meminfo}")
+
       diaglogger_info("[Collect] Collecting OS memory information...")
       meminfo = c.collect_meminfo()
-      diaglogger_info("[Collect] config file is stored in #{meminfo}")
+      diaglogger_info("[Collect] OS memory information is stored in #{meminfo}")
 
       diaglogger_info("[Collect] Collecting date/time information...")
       if system('which chronyc > /dev/null 2>&1')
@@ -95,7 +104,7 @@ module Diagtool
 			
       diaglogger_info("[Collect] Collecting netstat information...")
       if system('which netstat > /dev/null 2>&1')
-        netstat_n = c.collect_netstat_n()
+        netstat_n = c.collect_netstat_plan()
         netstat_s = c.collect_netstat_s()
         if @conf[:mask] == 'yes'
           diaglogger_info("[Mask] Masking netstat file : #{netstat_n}...")
@@ -158,17 +167,13 @@ module Diagtool
 
     def parse_diagconf(params)
       options = {
-        :output_dir => '',
-        :mask => 'no',
-        :words => [],
-        :wfile => '',
-        :seed => ''
+        :basedir => '', :mask => '', :words => [], :wfile => '', :seed => ''
       }
       if params[:output] != nil
         if Dir.exist?(params[:output])
-          options[:output_dir] = params[:output]
+          options[:basedir] = params[:output]
         else
-          raise "output directory '#{output_dir}' does not exist"
+          raise "output directory '#{basedir}' does not exist"
         end
       else
         raise "output directory '-o' must be specified"
@@ -197,18 +202,22 @@ module Diagtool
       options[:seed] = params[:"hash-seed"] if params[:"hash-seed"] != nil
       return options	
     end
+    
     def diaglogger_debug(str)
       @logger.debug(str)
       @logger_file.debug(str)
     end
+    
     def diaglogger_info(str)
       @logger.info(str)
       @logger_file.info(str)
     end
+    
     def diaglogger_warn(str)
       @logger.warn(str)
       @logger_file.warn(str)
     end
+    
     def diaglogger_error(str)
       @logger.error(str)
       @logger_file.error(str)

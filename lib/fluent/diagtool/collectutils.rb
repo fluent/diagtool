@@ -25,9 +25,10 @@ module Diagtool
         "#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
       })
       @time_format = conf[:time]
-      @output_dir = conf[:output_dir]
+      @basedir = conf[:basedir]
       @workdir = conf[:workdir]
-			
+      @outdir = conf[:outdir]			
+
       @tdenv = get_tdenv()
       @tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
       @tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
@@ -48,6 +49,7 @@ module Diagtool
       @logger.info("    td-agent log path = #{@tdlog_path}")
       @logger.info("    td-agent log = #{@tdlog}")
     end
+    
     def get_osenv()
       stdout, stderr, status = Open3.capture3('hostnamectl')
       os_dict = {}
@@ -60,6 +62,7 @@ module Diagtool
       end
       return os_dict
     end
+    
     def get_tdenv()
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
       env_dict = {}
@@ -73,6 +76,7 @@ module Diagtool
       end
       return env_dict
     end
+    
     def export_env()
       env = {
         :os => @osenv['Operating System'],
@@ -84,60 +88,78 @@ module Diagtool
       }
       return env
     end
+    
     def collect_tdconf()
       FileUtils.mkdir_p(@workdir+@tdconf_path)
       FileUtils.cp(@tdconf_path+@tdconf, @workdir+@tdconf_path)
       return @workdir+@tdconf_path+@tdconf
     end
+    
     def collect_tdlog()
       FileUtils.mkdir_p(@workdir+@tdlog_path)
       FileUtils.cp_r(@tdlog_path, @workdir+@oslog_path)
       return Dir.glob(@workdir+@tdlog_path+@tdlog+'*')
     end
+    
     def collect_sysctl()
       FileUtils.mkdir_p(@workdir+@sysctl_path)
       FileUtils.cp(@sysctl_path+@sysctl, @workdir+@sysctl_path)
       return @workdir+@sysctl_path+@sysctl
     end
+    
     def collect_oslog()
       FileUtils.mkdir_p(@workdir+@oslog_path)
       FileUtils.cp(@oslog_path+@oslog, @workdir+@oslog_path)
       return @workdir+@oslog_path+@oslog
     end
+    
     def collect_ulimit()
-      output = @workdir+'/ulimit_n.output'
+      output = @outdir+'/ulimit_n.output'
       stdout, stderr, status = Open3.capture3("ulimit -n")
       File.open(output, 'w') do |f|
         f.puts(stdout)
       end
       return output
     end
+   
+    def collect_ps_eo()
+      output = @outdir+'/ps_eo.output'
+      stdout, stderr, status = Open3.capture3("ps -eo pid,ppid,stime,time,%mem,%cpu,cmd")
+      File.open(output, 'w') do |f|
+        f.puts(stdout)
+      end
+      return output
+    end
+
     def collect_meminfo()
-      output = @workdir+'/meminfo.output'
+      output = @outdir+'/meminfo.output'
       stdout, stderr, status = Open3.capture3("cat /proc/meminfo")
       File.open(output, 'w') do |f|
         f.puts(stdout)
       end
       return output
     end
-    def collect_netstat_n()
-      output = @workdir+'/netstat_n.output'
-      stdout, stderr, status = Open3.capture3("netstat -n")
+    
+    def collect_netstat_plan()
+      output = @outdir+'/netstat_plan.output'
+      stdout, stderr, status = Open3.capture3("netstat -plan")
       File.open(output, 'w') do |f|
         f.puts(stdout)
       end
       return output
     end
+    
     def collect_netstat_s()
-      output = @workdir+'/netstat_s.output'
+      output = @outdir+'/netstat_s.output'
       stdout, stderr, status = Open3.capture3("netstat -s")
       File.open(output, 'w') do |f|
         f.puts(stdout)
       end
       return output
     end
+    
     def collect_ntp(command)
-      output = @workdir+'/ntp_info.output'
+      output = @outdir+'/ntp_info.output'
       stdout_date, stderr_date, status_date = Open3.capture3("date")
       stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources") if command == "chrony"
       stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("ntpq -p") if command == "ntp"
@@ -147,19 +169,21 @@ module Diagtool
       end
       return output
     end
+    
     def collect_tdgems()
-      output = @workdir+'/tdgem_list.output'
+      output = @outdir+'/tdgem_list.output'
       stdout, stderr, status = Open3.capture3("td-agent-gem list | grep fluent")
       File.open(output, 'w') do |f|
         f.puts(stdout)
       end
       return output
     end
+    
     def compress_output()
-      Dir.chdir(@output_dir)
+      Dir.chdir(@basedir)
       tar_file = 'diagout-'+@time_format+'.tar.gz'
       stdout, stderr, status = Open3.capture3("tar cvfz #{tar_file} #{@time_format}")
-      return @output_dir + '/' + tar_file
+      return @basedir + '/' + tar_file
     end
   end
 end

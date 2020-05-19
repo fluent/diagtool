@@ -29,13 +29,10 @@ module Diagtool
       })
       @logger.debug("Initialize Maskutils: sanitized word = #{conf[:words]}")
       @hash_seed = conf[:seed]
-      @id = {
-        :fid =>'',
-        :lid =>'',
-        :cid =>''
-      }
+      @id = {}
       @masklog = Hash.new { |h,k| h[k] = Hash.new(&h.default_proc) }
     end
+    
     def mask_tdlog(input_file, clean)
       line_id = 0
       f = File.open(input_file+'.mask', 'w')
@@ -51,6 +48,7 @@ module Diagtool
       FileUtils.rm(input_file) if clean == true
       return input_file+'.mask'
     end
+    
     def mask_tdlog_gz(input_file, clean)
       line_id = 0
       f = File.open(input_file+'.mask', 'w')
@@ -68,6 +66,7 @@ module Diagtool
       FileUtils.rm(input_file) if clean == true
       return input_file+'.mask'
     end
+    
     def mask_tdlog_inspector(line)
       i = 0
       contents=[]
@@ -157,6 +156,7 @@ module Diagtool
       @logger.debug("Masked Line: #{line_masked}")
       return line_masked
     end
+    
     def mask_direct_pattern(str)
       is_mask = false
       if str.include?(">")
@@ -173,6 +173,7 @@ module Diagtool
       end
       return is_mask, str_mask
     end	
+    
     def mask_url_pattern(str)
       is_mask = false
       url = str.split('://')
@@ -215,6 +216,7 @@ module Diagtool
       str_mask << ":" if str.end_with?(':')
       return is_mask, str_mask
     end
+    
     def mask_equal_pattern(str)
       is_mask = false
       l = str.split('=') ## Mask host=<address:ip/hostname> or bind=<address: ip/hostname>
@@ -228,6 +230,7 @@ module Diagtool
       str_mask = l.join('=')
       return is_mask, str_mask
     end
+    
     def mask_colon_pattern(str)
       is_mask = false
       l = str.split(':')
@@ -242,6 +245,7 @@ module Diagtool
       str_mask << ":" if str.end_with?(':')
       return is_mask, str_mask
     end
+    
     def mask_slash_pattern(str)
       is_mask = false
       l = str.split('/')
@@ -256,14 +260,17 @@ module Diagtool
       str_mask << ":" if str.end_with?(':')
       return is_mask, str_mask
     end
+    
     def is_ipv4?(str)
       !!(str =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)
     end
+    
     def is_fqdn?(str)
       #!!(str =~ /^\b((?=[a-z0-9-]{1,63}\.)[a-z0-9]+(-[a-z0-9]+)*\.)+([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/)
       !!(str =~ /^\b(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.){2,}([A-Za-z]|[A-Za-z][A-Za-z\-]*[A-Za-z]){2,}$/)
       #!!(str =~ /^\b(?=^.{1,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)/)
     end
+    
     def is_words?(str)
       value = false
       @words.each do | l |
@@ -274,6 +281,7 @@ module Diagtool
       end
       return value
     end
+    
     def mask_ipv4_fqdn_words(str)
       str = str.to_s
       mtype = ''
@@ -299,11 +307,13 @@ module Diagtool
       end
       return is_mask, str, str_mask
     end
+    
     def put_masklog(str, str_mask)
       uid = "Line#{@id[:lid]}-#{@id[:cid]}"
       @masklog[@id[:fid]][uid]['original'] = str
       @masklog[@id[:fid]][uid]['mask'] = str_mask
     end
+    
     def export_masklog(output_file)
       masklog_json = JSON.pretty_generate(@masklog)
       File.open(output_file, 'w') do |f|
