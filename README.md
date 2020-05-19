@@ -22,10 +22,24 @@ The scope of data collection:<br>
 ## Prerequisite
 
 
+## Installation
+
+```
+# gem install fluent-diagtool
+Fetching: fileutils-1.0.2.gem (100%)
+Successfully installed fileutils-1.0.2
+Fetching: json-2.1.0.gem (100%)
+Building native extensions. This could take a while...
+Successfully installed json-2.1.0
+Fetching: fluent-diagtool-0.1.2.gem (100%)
+Successfully installed fluent-diagtool-0.1.2
+3 gems installed
+```
+
 ## Usage
 ```
-# ruby diagtool.rb --help
-Usage: diagtool.rb -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}
+# diagtool --help
+Usage: /usr/local/bin/diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}
     -o, --output DIR                 Output directory (Mandatory)
     -m, --mask yes|no                Enable mask function (Optional : Default=no)
     -w, --word-list word1,word2      Provide a list of user-defined words which will to be masked (Optional : Default=None)
@@ -43,7 +57,7 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 
 #### Command sample:
 ```
-# ruby diagtool.rb -o /tmp/work1 -w passwd1,passwd2 -f word_list_sample -m yes
+# diagtool -o /tmp/work1 -w passwd1,passwd2 -f word_list_sample -m yes
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO] Parsing command options...
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Output directory = /tmp/work1
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Mask = yes
