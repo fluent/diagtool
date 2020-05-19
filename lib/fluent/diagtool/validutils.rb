@@ -38,6 +38,7 @@ module Diagtool
       @logger.debug("    Default ulimit: #{@def_ulimit}")
       @logger.debug("    Default sysctl: #{@def_sysctl}")
     end
+    
     def valid_ulimit(ulimit_file)
       @logger.info("Loading ulimit file: #{ulimit_file}")
       File.readlines(ulimit_file).each { |line|
@@ -50,6 +51,7 @@ module Diagtool
         end 
       }
     end
+    
     def valid_sysctl(sysctl_file)
       h = Hash.new()
       v = Hash.new { |i,j| i[j] = Hash.new(&h.default_proc) }
