@@ -57,7 +57,7 @@ module Diagtool
         s = l.split(":")
         os_dict[s[0].chomp.strip] = s[1].chomp.strip
       }
-      File.open(@workdir+'/os_env.output', 'w') do |f|
+      File.open(@outdir+'/os_env.output', 'w') do |f|
         f.puts(stdout)
       end
       return os_dict
@@ -66,14 +66,14 @@ module Diagtool
     def get_tdenv()
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
       env_dict = {}
-        File.open(@workdir+'/td-agent_env.output', 'w') do |f|
+        File.open(@outdir+'/td-agent_env.output', 'w') do |f|
           f.puts(stdout)
         end
         stdout.split().each do | l |
-        if l.include?('Environment')
-          env_dict[l.split('=')[1]] = l.split('=')[2]
+          if l.include?('Environment')
+            env_dict[l.split('=')[1]] = l.split('=')[2]
+          end
         end
-      end
       return env_dict
     end
     
