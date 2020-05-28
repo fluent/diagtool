@@ -24,17 +24,35 @@ module Diagtool
       @logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
         "#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
       })
+      @precheck = conf[:precheck]
       @time_format = conf[:time]
       @basedir = conf[:basedir]
       @workdir = conf[:workdir]
       @outdir = conf[:outdir]			
-
+       
       @tdenv = get_tdenv()
-      @tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
-      @tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
-      @tdlog =  @tdenv['TD_AGENT_LOG_FILE'].split('/')[-1]
-      @tdlog_path = @tdenv['TD_AGENT_LOG_FILE'].gsub(@tdlog,'')
-
+      if not conf[:tdconf].empty?
+	@tdconf = conf[:tdconf].split('/')[-1]
+        @tdconf_path = conf[:tdconf].gsub(@tdconf,'')
+      elsif
+	if not @tdenv['FLUENT_CONF'].empty?
+      	  @tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
+      	  @tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
+	else
+	  raise "The path of td-agent configuration file need to be specified."  if conf[:precheck] == false
+	end
+      end
+      if not conf[:tdlog].empty?
+        @tdlog = conf[:tdlog].split('/')[-1]
+        @tdlog_path = conf[:tdlog].gsub(@tdlog,'')
+      elsif
+        if not @tdenv['TD_AGENT_LOG_FILE'].empty?
+          @tdlog =  @tdenv['TD_AGENT_LOG_FILE'].split('/')[-1]
+          @tdlog_path = @tdenv['TD_AGENT_LOG_FILE'].gsub(@tdlog,'')
+        else
+          raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
+	end
+      end 
       @osenv = get_osenv()
       @oslog_path = '/var/log/'
       @oslog = 'messages'
@@ -57,8 +75,10 @@ module Diagtool
         s = l.split(":")
         os_dict[s[0].chomp.strip] = s[1].chomp.strip
       }
-      File.open(@outdir+'/os_env.output', 'w') do |f|
-        f.puts(stdout)
+      if @precheck == false  # SKip if precheck is true
+        File.open(@outdir+'/os_env.output', 'w') do |f|
+          f.puts(stdout)
+        end
       end
       return os_dict
     end
@@ -66,14 +86,44 @@ module Diagtool
     def get_tdenv()
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
       env_dict = {}
-        File.open(@outdir+'/td-agent_env.output', 'w') do |f|
-          f.puts(stdout)
-        end
+      if status.success?
+	if @precheck == false  # SKip if precheck is true
+          File.open(@outdir+'/td-agent_env.output', 'w') do |f|
+            f.puts(stdout)
+          end
+	end  
         stdout.split().each do | l |
           if l.include?('Environment')
             env_dict[l.split('=')[1]] = l.split('=')[2]
           end
-        end
+      	end
+      else
+        exe = 'fluentd'
+        stdout, stderr, status = Open3.capture3("ps aux | grep #{exe} | grep -v grep")
+        line = stdout.split(/\n/)
+	log_path = ''
+        conf_path = ''
+        line.each { |l|
+          cmd = l.split.drop(10)
+          i = 0
+          log_pos = 0
+          conf_pos = 0
+          if cmd[-1] != '--under-supervisor'
+            cmd.each { |c|
+              if c.include?("--log") || c.include?("-l")
+                log_pos = i + 1
+                log_path = cmd[log_pos]
+              elsif c.include?("--conf") || c.include?("-c")
+                conf_pos = i + 1
+                conf_path = cmd[conf_pos]
+              end
+              i+=1
+            }
+	  end
+	}
+        env_dict['FLUENT_CONF'] = conf_path
+        env_dict['TD_AGENT_LOG_FILE'] = log_path
+      end
       return env_dict
     end
     
@@ -90,27 +140,34 @@ module Diagtool
     end
     
     def collect_tdconf()
-      FileUtils.mkdir_p(@workdir+@tdconf_path)
-      FileUtils.cp(@tdconf_path+@tdconf, @workdir+@tdconf_path)
-      return @workdir+@tdconf_path+@tdconf
+      target_dir = @workdir+@tdconf_path
+      FileUtils.mkdir_p(target_dir)
+      FileUtils.cp(@tdconf_path+@tdconf, target_dir)
+      return target_dir+@tdconf
     end
     
     def collect_tdlog()
-      FileUtils.mkdir_p(@workdir+@tdlog_path)
-      FileUtils.cp_r(@tdlog_path, @workdir+@oslog_path)
-      return Dir.glob(@workdir+@tdlog_path+@tdlog+'*')
+      target_dir = @workdir+@tdlog_path
+      p target_dir
+      FileUtils.mkdir_p(target_dir)
+      Dir.glob(@tdlog_path+@tdlog+'*').each{ |f| 
+        FileUtils.cp(f, target_dir)
+      }
+      return Dir.glob(target_dir+@tdlog+'*')
     end
     
     def collect_sysctl()
-      FileUtils.mkdir_p(@workdir+@sysctl_path)
-      FileUtils.cp(@sysctl_path+@sysctl, @workdir+@sysctl_path)
-      return @workdir+@sysctl_path+@sysctl
+      target_dir = @workdir+@sysctl_path
+      FileUtils.mkdir_p(target_dir)
+      FileUtils.cp(@sysctl_path+@sysctl, target_dir)
+      return target_dir+@sysctl
     end
     
     def collect_oslog()
-      FileUtils.mkdir_p(@workdir+@oslog_path)
-      FileUtils.cp(@oslog_path+@oslog, @workdir+@oslog_path)
-      return @workdir+@oslog_path+@oslog
+      target_dir = @workdir+@oslog_path
+      FileUtils.mkdir_p(target_dir)
+      FileUtils.cp(@oslog_path+@oslog, target_dir)
+      return target_dir+@oslog
     end
     
     def collect_ulimit()

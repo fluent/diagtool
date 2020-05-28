@@ -27,14 +27,62 @@ module Diagtool
       time = Time.new
       @time_format = time.strftime("%Y%m%d%0k%M%0S")
       @conf = parse_diagconf(params)
+      #@conf[:time] = @time_format
+      #@conf[:workdir] = @conf[:basedir] + '/' + @time_format
+      #@conf[:outdir] = @conf[:workdir] + '/output'
+
+      #FileUtils.mkdir_p(@conf[:workdir])
+      #FileUtils.mkdir_p(@conf[:outdir])
+      
+      #diaglog = @conf[:workdir] + '/diagtool.output'
+      #@masklog = './mask_' + @time_format + '.json'
+      #@logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
+      #  "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
+      #})
+      #@logger_file = Logger.new(diaglog, formatter: proc {|severity, datetime, progname, msg|
+      #  "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
+      #})
+      #diaglogger_info("Parsing command options...")
+      #diaglogger_info("   Option : Output directory = #{@conf[:basedir]}")
+      #diaglogger_info("   Option : Mask = #{@conf[:mask]}")
+      #diaglogger_info("   Option : Word list = #{@conf[:words]}")
+      #diaglogger_info("   Option : Hash Seed = #{@conf[:seed]}")
+    end
+    
+    def run_precheck()
+      prechecklog = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
+        "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
+      })
+      loglevel = 'WARN'
+      c = CollectUtils.new(@conf, loglevel)
+      c_env = c.export_env()
+      prechecklog.info("[Precheck] Check OS parameters...")
+      prechecklog.info("[Precheck]    operating system = #{c_env[:os]}")
+      prechecklog.info("[Precheck]    kernel version = #{c_env[:kernel]}")
+      prechecklog.info("[Precheck] Check td-agent parameters...")
+      prechecklog.info("[Precheck]    td-agent conf path = #{c_env[:tdconf_path]}")
+      prechecklog.info("[Precheck]    td-agent conf file = #{c_env[:tdconf]}")
+      prechecklog.info("[Precheck]    td-agent log path = #{c_env[:tdlog_path]}")
+      prechecklog.info("[Precheck]    td-agent log = #{c_env[:tdlog]}")
+      if c_env[:tdconf_path] == nil || c_env[:tdconf] == nil
+	prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
+      end
+      if c_env[:tdlog_path] == nil || c_env[:tdlog] == nil
+        prechecklog.warn("[Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>")
+      end
+      if c_env[:tdconf_path] != nil && c_env[:tdconf] != nil && c_env[:tdlog_path] != nil && c_env[:tdlog] != nil
+	 prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
+      end
+    end
+
+    def run_diagtool()
       @conf[:time] = @time_format
       @conf[:workdir] = @conf[:basedir] + '/' + @time_format
       @conf[:outdir] = @conf[:workdir] + '/output'
-      
       FileUtils.mkdir_p(@conf[:workdir])
       FileUtils.mkdir_p(@conf[:outdir])
-      
       diaglog = @conf[:workdir] + '/diagtool.output'
+
       @masklog = './mask_' + @time_format + '.json'
       @logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
         "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
@@ -47,9 +95,7 @@ module Diagtool
       diaglogger_info("   Option : Mask = #{@conf[:mask]}")
       diaglogger_info("   Option : Word list = #{@conf[:words]}")
       diaglogger_info("   Option : Hash Seed = #{@conf[:seed]}")
-    end
-    
-    def diagtool()
+
       loglevel = 'WARN'
       diaglogger_info("Initializing parameters...")
       c = CollectUtils.new(@conf, loglevel)
@@ -167,16 +213,23 @@ module Diagtool
 
     def parse_diagconf(params)
       options = {
-        :basedir => '', :mask => '', :words => [], :wfile => '', :seed => ''
+        :precheck => '', :basedir => '', :mask => '', :words => [], :wfile => '', :seed => '', :tdconf =>'', :tdlog => ''
       }
-      if params[:output] != nil
-        if Dir.exist?(params[:output])
-          options[:basedir] = params[:output]
-        else
-          raise "output directory '#{basedir}' does not exist"
-        end
+      if params[:precheck]
+        options[:precheck] = params[:precheck]
       else
-        raise "output directory '-o' must be specified"
+        options[:precheck] = false
+      end
+      if options[:precheck] == false
+        if params[:output] != nil
+          if Dir.exist?(params[:output])
+            options[:basedir] = params[:output]
+          else
+            raise "output directory '#{basedir}' does not exist"
+          end
+        else
+          raise "output directory '-o' must be specified"
+        end
       end
       if params[:mask] == nil
         options[:mask] = 'no'
@@ -200,6 +253,25 @@ module Diagtool
       end
       options[:words] = options[:words].uniq 
       options[:seed] = params[:"hash-seed"] if params[:"hash-seed"] != nil
+      
+      if params[:conf] != nil
+        f = params[:conf]
+        if File.exist?(f)
+	  options[:tdconf] = params[:conf]
+        else
+          raise "#{params[:conf]} : No such file or directory"
+        end
+      end
+
+      if params[:log] != nil
+        f = params[:log]
+        if File.exist?(f)
+          options[:tdlog] = params[:log]
+        else
+          raise "#{params[:log]} : No such file or directory"
+        end
+      end
+
       return options	
     end
     
