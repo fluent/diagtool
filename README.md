@@ -81,6 +81,8 @@ The following example shows the precheck results when the diagtool is not able t
 2020-05-28 05:45:14 +0000: [Diagtool] [WARN] [Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>
 2020-05-28 05:45:14 +0000: [Diagtool] [WARN] [Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>
 ```
+
+### Run diagtool
 The user-defined words can be specified both -e option and -f option and the words are merged when both options are selected.
 The format of user-defined words list file specified in -f option should be followed format.
 ```
@@ -90,7 +92,6 @@ centos8102
 ```
 NOTE: When user specified the keywork, only the exact match words will be masked. For instance, when users like to mask words like "nginx1" and "nginx2", users need to specify "nginx1" and "nginx2" respectively and "nginx*" should not work in the tool.
 
-### Run diagtool
 #### Command sample:
 ```
 # diagtool -o /tmp/work1 -w passwd1,passwd2 -f word_list_sample -m yes
