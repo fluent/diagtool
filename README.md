@@ -52,7 +52,7 @@ Usage: /usr/local/bin/diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]}
     -l, --log log_file               provide a full path of td-agent log file (Optional : Default=None)
 ```
 ### Pre-check
-If the td-agent run as daemon, the diagtool automatically extract the path of td-agent configuration and log files from td-agent daemon and use them during data collection. The precheck options provides the function to confirm if the diagtool could gather the td-agent information as expected. 
+The diagtool automatically extract the path of td-agent configuration and log files from td-agent daemon and use them during data collection if the td-agent is managed as daemon. The precheck options provides the function to confirm if the diagtool could gather the td-agent information as expected. 
 The following command output shows the case when the diagtool successfully gather information from daemon.
 ```
 # diagtool --precheck
@@ -66,7 +66,7 @@ The following command output shows the case when the diagtool successfully gathe
 2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent log = td-agent.log
 2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Precheck completed. You can run diagtool command without -c and -l options
 ```
-In some cases, users do not use td-agent as daemon but use own script to run td-agent with command line options. In that cases, users need to speccify the path of td-agent configuration and log files with -c and -l options respectively.  
+In some cases, users do not manage td-agent as daemon but use own script to run td-agent with command line options. In that cases, users need to speccify the path of td-agent configuration and log files with -c and -l options respectively.  
 The following example shows the precheck results when the diagtool is not able to extract the path of td-agent configuration and log files.
 ```
 # diagtool --precheck
