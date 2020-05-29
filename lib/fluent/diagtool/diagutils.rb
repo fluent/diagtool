@@ -189,9 +189,11 @@ module Diagtool
       end
 
       if @conf[:mask] == 'yes'
-        diaglogger_info("[Mask] Masking td-agent config file : #{tdconf}...")
-        m.mask_tdlog(tdconf, clean = true)
-        tdlog.each do | file |
+	tdconf.each { | file |
+	  diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
+	  m.mask_tdlog(file, clean = true)
+	}
+        tdlog.each { | file |
           diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
           filename = file.split("/")[-1]
           if filename.include?(".gz")
@@ -199,7 +201,7 @@ module Diagtool
           elsif
             m.mask_tdlog(file, clean = true)
           end
-        end
+	}
       end
       
       if @conf[:mask] == 'yes'

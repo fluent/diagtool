@@ -30,7 +30,7 @@ module Diagtool
       @workdir = conf[:workdir]
       @outdir = conf[:outdir]			
        
-      @tdenv = gen_tdenv()
+      @tdenv = get_tdenv()
       if not conf[:tdconf].empty?
 	@tdconf = conf[:tdconf].split('/')[-1]
         @tdconf_path = conf[:tdconf].gsub(@tdconf,'')
@@ -53,7 +53,7 @@ module Diagtool
           raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
 	end
       end 
-      @osenv = gen_osenv()
+      @osenv = get_osenv()
       @oslog_path = '/var/log/'
       @oslog = 'messages'
       @sysctl_path = '/etc/'
@@ -68,7 +68,7 @@ module Diagtool
       @logger.info("    td-agent log = #{@tdlog}")
     end
     
-    def gen_osenv()
+    def get_osenv()
       stdout, stderr, status = Open3.capture3('hostnamectl')
       os_dict = {}
       stdout.each_line { |l|
@@ -83,7 +83,7 @@ module Diagtool
       return os_dict
     end
     
-    def gen_tdenv()
+    def get_tdenv()
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
       env_dict = {}
       if status.success?
@@ -143,45 +143,12 @@ module Diagtool
       target_dir = @workdir+@tdconf_path
       FileUtils.mkdir_p(target_dir)
       FileUtils.cp(@tdconf_path+@tdconf, target_dir)
-      conf = @workdir+@tdconf_path+@tdconf
-      conf_list = []
-      conf_list.push target_dir + @tdconf
-      File.readlines(conf).each { |line|
-      if line.include? '@include'
-        f = line.split()[1]
-        if f.start_with?(/\//)  # /tmp/work1/b.conf
-          if f.include?('*')
-            Dir.glob(f).each { |ff|
-              conf_inc = target_dir + ff.gsub(/\//,'__')
-              FileUtils.cp(ff, conf_inc)
-              conf_list.push conf_inc
-             }
-	  else 
-	    conf_inc = target_dir+f.gsub(/\//,'__')
-            FileUtils.cp(f, conf_inc)
-            conf_list.push  conf_inc
-	  end
-        else
-	  f = f.gsub('./','') if f.include?('./')
-          if f.include?('*')
-            Dir.glob(@tdconf_path+f).each{ |ff|
-              conf_inc = target_dir + ff.gsub(@tdconf_path,'').gsub(/\//,'__')
-              FileUtils.cp(ff, conf_inc)
-              conf_list.push conf_inc
-            }
-	  else
-            conf_inc = target_dir+f.gsub(/\//,'__')
-            FileUtils.cp(@tdconf_path+f, conf_inc)
-            conf_list.push  conf_inc
-	  end
-        end
-      end
-     }
-     return conf_list
+      return target_dir+@tdconf
     end
-
+    
     def collect_tdlog()
       target_dir = @workdir+@tdlog_path
+      p target_dir
       FileUtils.mkdir_p(target_dir)
       Dir.glob(@tdlog_path+@tdlog+'*').each{ |f| 
         FileUtils.cp(f, target_dir)
