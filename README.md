@@ -85,7 +85,7 @@ The following example shows the precheck results when the diagtool is not able t
 ### Run diagtool
 
 #### The "@include" directive in td-agent configuration file
-The "@include" directive is a function to reuse configuration defined in another configuration files. The diagtool read the td-agent configuration and collect the files described in "@include" directive. The details of "@include" directive are described in followed url:  
+The "@include" directive is a function to reuse configuration defined in another configuration files. The diagtool read the td-agent configuration and collect the files described in "@include" directive as well. The details of "@include" directive are described in followed url:  
 https://docs.fluentd.org/configuration/config-file#6-re-use-your-config-the-include-directive
 
 #### User defined words to be masked 
