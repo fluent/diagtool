@@ -176,16 +176,20 @@ module Diagtool
         end
       end
 
-      diaglogger_info("[Collect] Collecting ulimit information...")
-      ulimit = c.collect_ulimit()
-      diaglogger_info("[Collect] ulimit information is stored in #{ulimit}")
+      if system("sh -c 'ulimit -n'")
+      	diaglogger_info("[Collect] Collecting ulimit information...")
+      	ulimit = c.collect_ulimit()
+      	diaglogger_info("[Collect] ulimit information is stored in #{ulimit}")
 
-      diaglogger_info("[Valid] Validating ulimit information...")
-      ret, rec, val = v.valid_ulimit(ulimit)
-      if ret == true
-        diaglogger_info("[Valid]    ulimit => #{val} is correct (recommendation is >#{rec})")
+      	diaglogger_info("[Valid] Validating ulimit information...")
+      	ret, rec, val = v.valid_ulimit(ulimit)
+      	if ret == true
+          diaglogger_info("[Valid]    ulimit => #{val} is correct (recommendation is >#{rec})")
+        else
+          diaglogger_warn("[Valid]    ulimit => #{val} is incorrect (recommendation is >#{rec})")
+        end
       else
-        diaglogger_warn("[Valid]    ulimit => #{val} is incorrect (recommendation is >#{rec})")
+        diaglogger_warn("[Collect] ulimit command does not exist. skip collectig ulimit")
       end
 
       if @conf[:mask] == 'yes'

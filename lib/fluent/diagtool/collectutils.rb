@@ -205,7 +205,7 @@ module Diagtool
     
     def collect_ulimit()
       output = @outdir+'/ulimit_n.output'
-      stdout, stderr, status = Open3.capture3("ulimit -n")
+      stdout, stderr, status = Open3.capture3("sh -c 'ulimit -n'")
       File.open(output, 'w') do |f|
         f.puts(stdout)
       end
