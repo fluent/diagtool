@@ -1,2 +1,0 @@
-2020-03-2103:36:01-0400[info]:#0flushingallbufferforcedly
-2020-03-2203:24:01-0400[info]:#0forceflushingbufferedevents

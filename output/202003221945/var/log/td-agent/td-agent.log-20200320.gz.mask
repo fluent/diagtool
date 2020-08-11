@@ -1,6 +1,0 @@
-2020-03-1905:18:02-0400[info]:#0flushingallbufferforcedly
-2020-03-1905:45:49-0400[warn]:#0failedtoflushthebuffer.retry_time=16next_retry_seconds=2020-03-1915:32:22-0400chunk="5a1295043c1bb58f2581b6289ec6fe7d"error_class=Fluent::Plugin::ForwardOutput::NoNodesAvailableerror="nonodesareavailable"
-2020-03-1905:45:49-0400[warn]:#0suppressedsamestacktrace
-2020-03-1916:21:16-0400[warn]:#0failedtoflushthebuffer.retry_time=17next_retry_seconds=2020-03-2011:18:58-0400chunk="5a1295043c1bb58f2581b6289ec6fe7d"error_class=Fluent::Plugin::ForwardOutput::NoNodesAvailableerror="nonodesareavailable"
-2020-03-1916:21:16-0400[warn]:#0suppressedsamestacktrace
-2020-03-2003:47:01-0400[info]:#0forceflushingbufferedevents

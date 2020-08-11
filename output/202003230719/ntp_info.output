@@ -1,8 +1,0 @@
-Mon Mar 23 07:19:29 EDT 2020
-210 Number of sources = 4
-MS Name/IP address         Stratum Poll Reach LastRx Last sample               
-===============================================================================
-^* devnull.boom.net              2  10   377   685  +2079us[+2058us] +/-   24ms
-^- tick.srs1.ntfo.org            3  10   377    80  +4352us[+4352us] +/-  106ms
-^+ disorder.primate.net          2   9   377   768   +417us[ +389us] +/-   52ms
-^- lax1.justaguy.be              2  10   377   799  -1549us[-1578us] +/-   75ms
