@@ -1,0 +1,6 @@
+            def initialize_local(exlist)
+                    @time = Time.new
+                    @time_format = @time.strftime("%Y%m%d%k%M")
+                    exclude_list = exlist
+                    load_exlist(exclude_list)
+            end

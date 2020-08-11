@@ -1,0 +1,8 @@
+Sun Mar 22 19:04:58 EDT 2020
+210 Number of sources = 4
+MS Name/IP address         Stratum Poll Reach LastRx Last sample               
+===============================================================================
+^* darwin.kenyonralph.com        2   8   367   218   +606us[ +583us] +/-   55ms
+^- tick.srs1.ntfo.org            3   7   377   110  -2634us[-2634us] +/-  122ms
+^+ time.cloudflare.com           3   9   377   338  +5401us[+5374us] +/-   46ms
+^+ lax1.justaguy.be              2   9   377   211  -2064us[-2064us] +/-   69ms
