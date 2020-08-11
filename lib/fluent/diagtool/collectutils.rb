@@ -202,7 +202,17 @@ module Diagtool
       FileUtils.cp(@oslog_path+@oslog, target_dir)
       return target_dir+@oslog
     end
-    
+   
+    def collect_cmd_output(cmd)
+      cmd_name = cmd.gsub(/\s/,'_')
+      output = @outdir+'/'+cmd_name
+      stdout, stderr, status = Open3.capture3(cmd)
+          File.open(output, 'w') do |f|
+        f.puts(stdout)
+      end
+      return output
+    end
+
     def collect_ulimit()
       output = @outdir+'/ulimit_n.output'
       stdout, stderr, status = Open3.capture3("sh -c 'ulimit -n'")
