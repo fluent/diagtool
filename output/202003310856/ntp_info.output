@@ -1,0 +1,8 @@
+Tue Mar 31 08:56:17 EDT 2020
+210 Number of sources = 4
+MS Name/IP address         Stratum Poll Reach LastRx Last sample               
+===============================================================================
+^+ 92.246.24.228                 1  10   377    11  +1680us[+1680us] +/-   92ms
+^* tock.usshc.com                1  10   377   915  +2194us[+2690us] +/-   31ms
+^- neoknet.com                   4  10   377   377  +8218us[+8218us] +/-  181ms
+^+ ntp5.doctor.com               2  10   377   210  -2239us[-2239us] +/-   66ms

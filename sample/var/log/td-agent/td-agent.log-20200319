@@ -1,0 +1,6 @@
+2020-03-18 20:38:01 -0400 [info]: #0 flushing all buffer forcedly
+2020-03-18 21:35:05 -0400 [warn]: #0 failed to flush the buffer. retry_time=14 next_retry_seconds=2020-03-19 00:04:25 -0400 chunk="5a1295043c1bb58f2581b6289ec6fe7d" error_class=Fluent::Plugin::ForwardOutput::NoNodesAvailable error="no nodes are available"
+  2020-03-18 21:35:05 -0400 [warn]: #0 suppressed same stacktrace
+2020-03-19 00:13:47 -0400 [warn]: #0 failed to flush the buffer. retry_time=15 next_retry_seconds=2020-03-19 05:20:16 -0400 chunk="5a1295043c1bb58f2581b6289ec6fe7d" error_class=Fluent::Plugin::ForwardOutput::NoNodesAvailable error="no nodes are available"
+  2020-03-19 00:13:47 -0400 [warn]: #0 suppressed same stacktrace
+2020-03-19 05:18:02 -0400 [info]: #0 force flushing buffered events

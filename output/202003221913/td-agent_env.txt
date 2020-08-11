@@ -1,0 +1,31 @@
+# /usr/lib/systemd/system/td-agent.service
+[Unit]
+Description=td-agent: Fluentd based data collector for Treasure Data
+Documentation=https://docs.treasuredata.com/articles/td-agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=td-agent
+Group=td-agent
+LimitNOFILE=65536
+Environment=LD_PRELOAD=/opt/td-agent/embedded/lib/libjemalloc.so
+Environment=GEM_HOME=/opt/td-agent/embedded/lib/ruby/gems/2.4.0/
+Environment=GEM_PATH=/opt/td-agent/embedded/lib/ruby/gems/2.4.0/
+Environment=FLUENT_CONF=/etc/td-agent/td-agent.conf
+Environment=FLUENT_PLUGIN=/etc/td-agent/plugin
+Environment=FLUENT_SOCKET=/var/run/td-agent/td-agent.sock
+Environment=TD_AGENT_LOG_FILE=/var/log/td-agent/td-agent.log
+Environment=TD_AGENT_OPTIONS=
+EnvironmentFile=-/etc/sysconfig/td-agent
+PIDFile=/var/run/td-agent/td-agent.pid
+RuntimeDirectory=td-agent
+Type=forking
+ExecStart=/opt/td-agent/embedded/bin/fluentd --log $TD_AGENT_LOG_FILE --daemon /var/run/td-agent/td-agent.pid $TD_AGENT_OPTIONS
+ExecStop=/bin/kill -TERM ${MAINPID}
+ExecReload=/bin/kill -HUP ${MAINPID}
+Restart=always
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target
