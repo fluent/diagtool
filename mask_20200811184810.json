@@ -1,0 +1,664 @@
+{
+  "/tmp/work1/20200811184810/var/log/messages": {
+    "Line0-9": {
+      "original": "www.rsyslog.com",
+      "mask": "FQDN_fef1c6ae5d66c6de1e395b2010777be5"
+    },
+    "Line56-7": {
+      "original": "45.33.84.208",
+      "mask": "IPv4_5814b771e9d218da7c6240f756123bd2"
+    },
+    "Line59-6": {
+      "original": "204.2.134.164",
+      "mask": "IPv4_00eab8d7ffb601f280d593ad050077a3"
+    },
+    "Line59-9": {
+      "original": "119.159.246.253",
+      "mask": "IPv4_b5e4fb0cdb4a9b8fadf5f5119770d96f"
+    },
+    "Line63-7": {
+      "original": "4.53.160.75",
+      "mask": "IPv4_7b4f6b132a241211ad9a62c1f56f0a0f"
+    },
+    "Line72-6": {
+      "original": "45.33.84.208",
+      "mask": "IPv4_5814b771e9d218da7c6240f756123bd2"
+    },
+    "Line72-9": {
+      "original": "62.108.36.235",
+      "mask": "IPv4_943f93f6e7e1786b492f31e883649c54"
+    },
+    "Line107-7": {
+      "original": "62.108.36.235",
+      "mask": "IPv4_943f93f6e7e1786b492f31e883649c54"
+    },
+    "Line108-6": {
+      "original": "4.53.160.75",
+      "mask": "IPv4_7b4f6b132a241211ad9a62c1f56f0a0f"
+    },
+    "Line108-9": {
+      "original": "81.21.65.169",
+      "mask": "IPv4_aba13323b2fff4e1a8ee47f867b9ccec"
+    },
+    "Line112-7": {
+      "original": "195.186.1.100",
+      "mask": "IPv4_d6f1b11af8e278b243e6907a7716ba28"
+    },
+    "Line253-11": {
+      "original": "dbus-org.bluez.service",
+      "mask": "FQDN_35b97f8898b87fccfc112eaf8c46f72e"
+    },
+    "Line257-10": {
+      "original": "org.freedesktop.DBus.Error.NoReply",
+      "mask": "FQDN_17da6d18b892b1ab8e9bb1e1f651a871"
+    },
+    "Line272-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line278-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line282-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line288-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line292-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line296-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line300-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line304-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line308-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line312-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line316-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line322-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line326-10": {
+      "original": "org.freedesktop.PackageKit",
+      "mask": "FQDN_5e86b9703ff2cb675e3fa7c02a100b92"
+    },
+    "Line328-9": {
+      "original": "org.freedesktop.PackageKit",
+      "mask": "FQDN_5e86b9703ff2cb675e3fa7c02a100b92"
+    },
+    "Line330-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line336-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line340-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line346-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line350-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line354-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line358-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line362-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line366-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line372-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line376-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line380-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line384-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line390-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line394-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line403-10": {
+      "original": "org.freedesktop.PackageKit",
+      "mask": "FQDN_5e86b9703ff2cb675e3fa7c02a100b92"
+    },
+    "Line405-9": {
+      "original": "org.freedesktop.PackageKit",
+      "mask": "FQDN_5e86b9703ff2cb675e3fa7c02a100b92"
+    },
+    "Line407-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line411-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line415-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line421-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line425-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line429-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line437-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line441-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line447-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line451-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line455-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line459-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line474-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line531-6": {
+      "original": "81.21.65.169",
+      "mask": "IPv4_aba13323b2fff4e1a8ee47f867b9ccec"
+    },
+    "Line531-9": {
+      "original": "50.205.244.108",
+      "mask": "IPv4_f37de5a3c68182b1fa9d0d789846e07e"
+    },
+    "Line535-7": {
+      "original": "50.205.244.108",
+      "mask": "IPv4_f37de5a3c68182b1fa9d0d789846e07e"
+    },
+    "Line563-11": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    }
+  },
+  "/tmp/work1/20200811184810/output/netstat_-plan.txt": {
+    "Line2-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line2-28": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line3-15": {
+      "original": "192.168.122.1",
+      "mask": "IPv4_4af2c1488ae5f17152b805e9d2f39de0"
+    },
+    "Line3-23": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line4-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line4-29": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line5-15": {
+      "original": "127.0.0.1",
+      "mask": "IPv4_f528764d624db129b32c21fbca0cb8d6"
+    },
+    "Line5-26": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line6-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line6-26": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line7-15": {
+      "original": "192.168.56.11",
+      "mask": "IPv4_0afd37ad780d20b94c0d0814acd6d3ef"
+    },
+    "Line7-20": {
+      "original": "192.168.56.12",
+      "mask": "IPv4_28b515a0b563a5ac476cc331b75963d0"
+    },
+    "Line8-15": {
+      "original": "192.168.56.11",
+      "mask": "IPv4_0afd37ad780d20b94c0d0814acd6d3ef"
+    },
+    "Line8-23": {
+      "original": "192.168.56.1",
+      "mask": "IPv4_bb645a76287f3dbccf9f33841bcd11aa"
+    },
+    "Line9-15": {
+      "original": "192.168.56.11",
+      "mask": "IPv4_0afd37ad780d20b94c0d0814acd6d3ef"
+    },
+    "Line9-23": {
+      "original": "192.168.56.1",
+      "mask": "IPv4_bb645a76287f3dbccf9f33841bcd11aa"
+    },
+    "Line10-15": {
+      "original": "192.168.56.11",
+      "mask": "IPv4_0afd37ad780d20b94c0d0814acd6d3ef"
+    },
+    "Line10-23": {
+      "original": "192.168.56.1",
+      "mask": "IPv4_bb645a76287f3dbccf9f33841bcd11aa"
+    },
+    "Line11-15": {
+      "original": "192.168.56.11",
+      "mask": "IPv4_0afd37ad780d20b94c0d0814acd6d3ef"
+    },
+    "Line11-23": {
+      "original": "192.168.56.1",
+      "mask": "IPv4_bb645a76287f3dbccf9f33841bcd11aa"
+    },
+    "Line15-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line15-27": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line16-15": {
+      "original": "192.168.122.1",
+      "mask": "IPv4_4af2c1488ae5f17152b805e9d2f39de0"
+    },
+    "Line16-23": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line17-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line17-29": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line18-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line18-28": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line19-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line19-27": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line20-15": {
+      "original": "127.0.0.1",
+      "mask": "IPv4_f528764d624db129b32c21fbca0cb8d6"
+    },
+    "Line20-26": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line21-15": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line21-26": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    }
+  },
+  "/tmp/work1/20200811184810/etc/td-agent/td-agent.conf": {
+    "Line3-3": {
+      "original": "nginx.access.log.pos",
+      "mask": "FQDN_def47072b109eafddf423d5680874041"
+    },
+    "Line11-3": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line17-3": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line28-5": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    }
+  },
+  "/tmp/work1/20200811184810/var/log/td-agent/td-agent.log-20200512.gz": {
+    "Line16-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line16-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line21-5": {
+      "original": "nginx.access.log.pos",
+      "mask": "FQDN_def47072b109eafddf423d5680874041"
+    },
+    "Line31-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line36-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line43-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line63-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line63-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line68-9": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line71-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    }
+  },
+  "/tmp/work1/20200811184810/var/log/td-agent/td-agent.log-20200520.gz": {
+    "Line25-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line25-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line30-5": {
+      "original": "nginx.access.log.pos",
+      "mask": "FQDN_def47072b109eafddf423d5680874041"
+    },
+    "Line40-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line45-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line52-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line72-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line72-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line77-9": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line80-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line105-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line105-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line110-5": {
+      "original": "nginx.access.log.pos",
+      "mask": "FQDN_def47072b109eafddf423d5680874041"
+    },
+    "Line120-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line125-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line132-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line152-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line152-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line157-9": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line160-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    }
+  },
+  "/tmp/work1/20200811184810/var/log/td-agent/td-agent.log-20200529.gz": {
+    "Line15-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line15-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line20-5": {
+      "original": "nginx.access.log.pos",
+      "mask": "FQDN_def47072b109eafddf423d5680874041"
+    },
+    "Line30-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line35-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line42-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line62-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line62-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line67-9": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line70-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line71-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    }
+  },
+  "/tmp/work1/20200811184810/var/log/td-agent/td-agent.log-20200605.gz": {
+    "Line16-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line16-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line21-5": {
+      "original": "nginx.access.log.pos",
+      "mask": "FQDN_def47072b109eafddf423d5680874041"
+    },
+    "Line31-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line36-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line43-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line63-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line63-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line68-9": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line71-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    }
+  },
+  "/tmp/work1/20200811184810/var/log/td-agent/td-agent.log-20200625.gz": {
+    "Line24-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    }
+  },
+  "/tmp/work1/20200811184810/var/log/td-agent/td-agent.log-20200810.gz": {
+    "Line28-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line28-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line33-5": {
+      "original": "nginx.access.log.pos",
+      "mask": "FQDN_def47072b109eafddf423d5680874041"
+    },
+    "Line43-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line48-5": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line55-7": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line75-8": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line75-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    },
+    "Line80-9": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line83-9": {
+      "original": "centos8102.demo.com",
+      "mask": "FQDN_53ea78d3263c5db37226e7f8d2ee07e8"
+    }
+  }
+}
