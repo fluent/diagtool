@@ -1,8 +1,0 @@
-Mon Mar 23 13:36:55 EDT 2020
-210 Number of sources = 4
-MS Name/IP address         Stratum Poll Reach LastRx Last sample               
-===============================================================================
-^* devnull.boom.net              2   7   377    60   +417us[ +611us] +/-   35ms
-^- melbicombg.entry.bg           3   6   377    15  -3887us[-3887us] +/-  177ms
-^+ disorder.primate.net          2   7   377     5  -3220us[-3220us] +/-   37ms
-^+ ec2-35-183-57-169.ca-cen>     2   7   377    12  -2194us[-2194us] +/-   82ms
