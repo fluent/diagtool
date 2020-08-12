@@ -190,13 +190,6 @@ module Diagtool
       return Dir.glob(target_dir+@tdlog+'*')
     end
     
-    def collect_sysctl()
-      target_dir = @workdir+@sysctl_path
-      FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(@sysctl_path+@sysctl, target_dir)
-      return target_dir+@sysctl
-    end
-    
     def collect_oslog()
       target_dir = @workdir+@oslog_path
       FileUtils.mkdir_p(target_dir)
@@ -209,13 +202,6 @@ module Diagtool
       else
 	@logger.warn("Can not find OS log file in #{oslog} or #{syslog}")
       end
-    end
-
-    def collect_syslog()
-      target_dir = @workdir+@oslog_path
-      FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(@oslog_path+@syslog, target_dir)
-      return target_dir+@syslog
     end
 
     def collect_cmd_output(cmd)
@@ -232,18 +218,6 @@ module Diagtool
       return output
     end
 
-    def collect_ntp(command)
-      output = @outdir+'/ntp_info.output'
-      stdout_date, stderr_date, status_date = Open3.capture3("date")
-      stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources") if command == "chrony"
-      stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("ntpq -p") if command == "ntp"
-      File.open(output, 'w') do |f|
-        f.puts(stdout_date)
-        f.puts(stdout_ntp)
-      end
-      return output
-    end
-    
     def collect_tdgems()
       output = @outdir+'/tdgem_list.output'
       stdout, stderr, status = Open3.capture3("td-agent-gem list | grep fluent")

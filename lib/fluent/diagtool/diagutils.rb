@@ -118,10 +118,10 @@ module Diagtool
 
       diaglogger_info("[Collect] Collecting date/time information...")
       if system('which chronyc > /dev/null 2>&1')
-        ntp = c.collect_ntp(command="chrony")
+        ntp = c.collect_cmd_output(command="chronyc sources")
 	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       elsif system('which ntpq > /dev/null 2>&1')
-        ntp = c.collect_ntp(command="ntp")
+        ntp = c.collect_ntp(command="ntpq -p")
 	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       else
         diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig date/time information")
@@ -144,7 +144,7 @@ module Diagtool
       #  Correct information to be validated
       ###
       diaglogger_info("[Collect] Collecting systctl information...")
-      sysctl = c.collect_sysctl()
+      sysctl = c.collect_cmd_output("sysctl -a")
       diaglogger_info("[Collect] sysctl information is stored in #{sysctl}")
 			
       diaglogger_info("[Valid] Validating systctl information...")
