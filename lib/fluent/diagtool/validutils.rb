@@ -33,7 +33,8 @@ module Diagtool
         :net_ipv4_tcp_max_syn_backlog => "8096",
         :net_ipv4_tcp_slow_start_after_idle => "0",
         :net_ipv4_tcp_tw_reuse => "1",
-        :net_ipv4_ip_local_port_range => ["10240", "65535"]}
+        :net_ipv4_ip_local_port_range => ["10240", "65535"]
+      }
       @logger.debug("Initialize Validation Utils:")
       @logger.debug("    Default ulimit: #{@def_ulimit}")
       @logger.debug("    Default sysctl: #{@def_sysctl}")
@@ -57,7 +58,7 @@ module Diagtool
       v = Hash.new { |i,j| i[j] = Hash.new(&h.default_proc) }
       @logger.info("Loading sysctl file: #{sysctl_file}")
       File.readlines(sysctl_file).each{ |line|
-        if line.include?("net")
+        if line.include? "net"
           line_net = line.chomp.gsub(".","_").split("=")
           key = line_net[0].strip.to_sym
           if line_net[1].strip! =~ /\s/
@@ -66,17 +67,19 @@ module Diagtool
             value= line_net[1]
           end
           h[key] = value
-          if @def_sysctl[key] == value
-            @logger.info("#{key} => #{value} is correct")
-            v[key]['value'] = value
-            v[key]['recommend'] = @def_sysctl[key]	
-            v[key]['result'] = "correct"
-          else
-            @logger.warn("#{key} => #{value} is incorrect, should be #{@def_sysctl[key]}")
-            v[key]['value'] = value
-            v[key]['recommend'] = @def_sysctl[key]
-            v[key]['result'] = "incorrect"
-          end
+	  if @def_sysctl.key? key
+            if @def_sysctl[key] == value
+              @logger.info("#{key} => #{value} is correct")
+              v[key]['value'] = value
+              v[key]['recommend'] = @def_sysctl[key]	
+              v[key]['result'] = "correct"
+            else
+              @logger.warn("#{key} => #{value} is incorrect, should be #{@def_sysctl[key]}")
+              v[key]['value'] = value
+              v[key]['recommend'] = @def_sysctl[key]
+              v[key]['result'] = "incorrect"
+            end
+	  end
         end
       }
       if h == @sysctl

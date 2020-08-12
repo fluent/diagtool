@@ -22,7 +22,7 @@ module Diagtool
   class CollectUtils
     def initialize(conf, log_level)
       @logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
-        "#{datetime}: [Diagutils] [#{severity}] #{msg}\n"
+        "#{datetime}: [Collectutils] [#{severity}] #{msg}\n"
       })
       @precheck = conf[:precheck]
       @time_format = conf[:time]
@@ -56,6 +56,7 @@ module Diagtool
       @osenv = gen_osenv()
       @oslog_path = '/var/log/'
       @oslog = 'messages'
+      @syslog = 'syslog'
       @sysctl_path = '/etc/'
       @sysctl = 'sysctl.conf'        
 
@@ -189,77 +190,34 @@ module Diagtool
       return Dir.glob(target_dir+@tdlog+'*')
     end
     
-    def collect_sysctl()
-      target_dir = @workdir+@sysctl_path
-      FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(@sysctl_path+@sysctl, target_dir)
-      return target_dir+@sysctl
-    end
-    
     def collect_oslog()
       target_dir = @workdir+@oslog_path
       FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(@oslog_path+@oslog, target_dir)
-      return target_dir+@oslog
-    end
-    
-    def collect_ulimit()
-      output = @outdir+'/ulimit_n.output'
-      stdout, stderr, status = Open3.capture3("sh -c 'ulimit -n'")
-      File.open(output, 'w') do |f|
-        f.puts(stdout)
+      if File.exist? @oslog_path+@oslog
+      	FileUtils.cp(@oslog_path+@oslog, target_dir)
+      	return target_dir+@oslog
+      elsif File.exist? @oslog_path+@syslog
+        FileUtils.cp(@oslog_path+@syslog, target_dir)
+        return target_dir+@syslog
+      else
+	@logger.warn("Can not find OS log file in #{oslog} or #{syslog}")
       end
-      return output
     end
-   
-    def collect_ps_eo()
-      output = @outdir+'/ps_eo.output'
-      stdout, stderr, status = Open3.capture3("ps -eo pid,ppid,stime,time,%mem,%cpu,cmd")
-      File.open(output, 'w') do |f|
-        f.puts(stdout)
+
+    def collect_cmd_output(cmd)
+      cmd_name = cmd.gsub(/\s/,'_').gsub(/\//,'-').gsub(',','_')
+      output = @outdir+'/'+cmd_name+'.txt'
+      stdout, stderr, status = Open3.capture3(cmd)
+      if status.success?
+	File.open(output, 'w') do |f|
+          f.puts(stdout)
+        end
+      else
+        @logger.warn("Command #{cmd} failed due to the following message -  #{stderr.chomp}")
       end
       return output
     end
 
-    def collect_meminfo()
-      output = @outdir+'/meminfo.output'
-      stdout, stderr, status = Open3.capture3("cat /proc/meminfo")
-      File.open(output, 'w') do |f|
-        f.puts(stdout)
-      end
-      return output
-    end
-    
-    def collect_netstat_plan()
-      output = @outdir+'/netstat_plan.output'
-      stdout, stderr, status = Open3.capture3("netstat -plan")
-      File.open(output, 'w') do |f|
-        f.puts(stdout)
-      end
-      return output
-    end
-    
-    def collect_netstat_s()
-      output = @outdir+'/netstat_s.output'
-      stdout, stderr, status = Open3.capture3("netstat -s")
-      File.open(output, 'w') do |f|
-        f.puts(stdout)
-      end
-      return output
-    end
-    
-    def collect_ntp(command)
-      output = @outdir+'/ntp_info.output'
-      stdout_date, stderr_date, status_date = Open3.capture3("date")
-      stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources") if command == "chrony"
-      stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("ntpq -p") if command == "ntp"
-      File.open(output, 'w') do |f|
-        f.puts(stdout_date)
-        f.puts(stdout_ntp)
-      end
-      return output
-    end
-    
     def collect_tdgems()
       output = @outdir+'/tdgem_list.output'
       stdout, stderr, status = Open3.capture3("td-agent-gem list | grep fluent")
