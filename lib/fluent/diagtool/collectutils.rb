@@ -204,6 +204,17 @@ module Diagtool
       end
     end
 
+    def collect_ntp(command)
+      output = @outdir+'/ntp_info.output'
+      stdout_date, stderr_date, status_date = Open3.capture3("date")
+      stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("chronyc sources") if command == "chrony"
+      stdout_ntp, stderr_ntp, status_ntp = Open3.capture3("ntpq -p") if command == "ntp"
+      File.open(output, 'w') do |f|
+        f.puts(stdout_date)
+        f.puts(stdout_ntp)
+      end
+    end
+
     def collect_cmd_output(cmd)
       cmd_name = cmd.gsub(/\s/,'_').gsub(/\//,'-').gsub(',','_')
       output = @outdir+'/'+cmd_name+'.txt'

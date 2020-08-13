@@ -27,8 +27,7 @@ module Diagtool
       time = Time.new
       @time_format = time.strftime("%Y%m%d%0k%M%0S")
       @conf = parse_diagconf(params)
-      @cmd_list = [
-      	"ps -eo pid,ppid,stime,time,%mem,%cpu,cmd",
+      @cmd_list = [ "ps -eo pid,ppid,stime,time,%mem,%cpu,cmd",
 	"cat /proc/meminfo",
 	"netstat -plan",
 	"netstat -s",
@@ -121,7 +120,7 @@ module Diagtool
         ntp = c.collect_cmd_output(command="chronyc sources")
 	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       elsif system('which ntpq > /dev/null 2>&1')
-        ntp = c.collect_ntp(command="ntpq -p")
+        ntp = c.collect_cmd_output(command="ntpq -p")
 	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       else
         diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig date/time information")
