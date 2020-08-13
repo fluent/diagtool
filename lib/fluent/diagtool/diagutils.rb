@@ -27,14 +27,48 @@ module Diagtool
       time = Time.new
       @time_format = time.strftime("%Y%m%d%0k%M%0S")
       @conf = parse_diagconf(params)
+      @cmd_list = [
+      	"ps -eo pid,ppid,stime,time,%mem,%cpu,cmd",
+	"cat /proc/meminfo",
+	"netstat -plan",
+	"netstat -s",
+      ]
+    end
+    
+    def run_precheck()
+      prechecklog = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
+        "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
+      })
+      loglevel = 'WARN'
+      c = CollectUtils.new(@conf, loglevel)
+      c_env = c.export_env()
+      prechecklog.info("[Precheck] Check OS parameters...")
+      prechecklog.info("[Precheck]    operating system = #{c_env[:os]}")
+      prechecklog.info("[Precheck]    kernel version = #{c_env[:kernel]}")
+      prechecklog.info("[Precheck] Check td-agent parameters...")
+      prechecklog.info("[Precheck]    td-agent conf path = #{c_env[:tdconf_path]}")
+      prechecklog.info("[Precheck]    td-agent conf file = #{c_env[:tdconf]}")
+      prechecklog.info("[Precheck]    td-agent log path = #{c_env[:tdlog_path]}")
+      prechecklog.info("[Precheck]    td-agent log = #{c_env[:tdlog]}")
+      if c_env[:tdconf_path] == nil || c_env[:tdconf] == nil
+	prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
+      end
+      if c_env[:tdlog_path] == nil || c_env[:tdlog] == nil
+        prechecklog.warn("[Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>")
+      end
+      if c_env[:tdconf_path] != nil && c_env[:tdconf] != nil && c_env[:tdlog_path] != nil && c_env[:tdlog] != nil
+	 prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
+      end
+    end
+
+    def run_diagtool()
       @conf[:time] = @time_format
       @conf[:workdir] = @conf[:basedir] + '/' + @time_format
       @conf[:outdir] = @conf[:workdir] + '/output'
-      
       FileUtils.mkdir_p(@conf[:workdir])
       FileUtils.mkdir_p(@conf[:outdir])
-      
       diaglog = @conf[:workdir] + '/diagtool.output'
+
       @masklog = './mask_' + @time_format + '.json'
       @logger = Logger.new(STDOUT, formatter: proc {|severity, datetime, progname, msg|
         "#{datetime}: [Diagtool] [#{severity}] #{msg}\n"
@@ -47,9 +81,7 @@ module Diagtool
       diaglogger_info("   Option : Mask = #{@conf[:mask]}")
       diaglogger_info("   Option : Word list = #{@conf[:words]}")
       diaglogger_info("   Option : Hash Seed = #{@conf[:seed]}")
-    end
-    
-    def diagtool()
+
       loglevel = 'WARN'
       diaglogger_info("Initializing parameters...")
       c = CollectUtils.new(@conf, loglevel)
@@ -84,39 +116,35 @@ module Diagtool
       end
       diaglogger_info("[Collect] config file is stored in #{oslog}")
 
-      diaglogger_info("[Collect] Collecting process information...")
-      meminfo = c.collect_ps_eo()
-      diaglogger_info("[Collect] process informationis stored in #{meminfo}")
-
-      diaglogger_info("[Collect] Collecting OS memory information...")
-      meminfo = c.collect_meminfo()
-      diaglogger_info("[Collect] OS memory information is stored in #{meminfo}")
-
       diaglogger_info("[Collect] Collecting date/time information...")
       if system('which chronyc > /dev/null 2>&1')
-        ntp = c.collect_ntp(command="chrony")
+        ntp = c.collect_cmd_output(command="chronyc sources")
+	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       elsif system('which ntpq > /dev/null 2>&1')
-        ntp = c.collect_ntp(command="ntp")
+        ntp = c.collect_ntp(command="ntpq -p")
+	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       else
         diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig date/time information")
       end
-      diaglogger_info("[Collect] date/time information is stored in #{ntp}")
-			
-      diaglogger_info("[Collect] Collecting netstat information...")
-      if system('which netstat > /dev/null 2>&1')
-        netstat_n = c.collect_netstat_plan()
-        netstat_s = c.collect_netstat_s()
-        if @conf[:mask] == 'yes'
-          diaglogger_info("[Mask] Masking netstat file : #{netstat_n}...")
-          netstat_n = m.mask_tdlog(netstat_n, clean = true)
-        end
-        diaglogger_info("[Collect] netstat information is stored in #{netstat_n} and #{netstat_s}")		
-      else
-        diaglogger_warn("[Collect] netstat does not exist. skip collectig netstat")
-      end
       
+      ###
+      #  Correct OS information
+      ###
+      @cmd_list.each { |cmd|
+	diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
+	out = c.collect_cmd_output(cmd)
+	if @conf[:mask] == 'yes'
+          diaglogger_info("[Mask] Masking netstat file : #{out}...")
+          out = m.mask_tdlog(out, clean = true)
+        end
+	diaglogger_info("[Collect] Collecting command output #{cmd.split[0]} stored in #{out}")
+      }
+			
+      ###
+      #  Correct information to be validated
+      ###
       diaglogger_info("[Collect] Collecting systctl information...")
-      sysctl = c.collect_sysctl()
+      sysctl = c.collect_cmd_output("sysctl -a")
       diaglogger_info("[Collect] sysctl information is stored in #{sysctl}")
 			
       diaglogger_info("[Valid] Validating systctl information...")
@@ -131,7 +159,7 @@ module Diagtool
       end
 
       diaglogger_info("[Collect] Collecting ulimit information...")
-      ulimit = c.collect_ulimit()
+      ulimit = c.collect_cmd_output(cmd="sh -c 'ulimit -n'")
       diaglogger_info("[Collect] ulimit information is stored in #{ulimit}")
 
       diaglogger_info("[Valid] Validating ulimit information...")
@@ -143,9 +171,11 @@ module Diagtool
       end
 
       if @conf[:mask] == 'yes'
-        diaglogger_info("[Mask] Masking td-agent config file : #{tdconf}...")
-        m.mask_tdlog(tdconf, clean = true)
-        tdlog.each do | file |
+	tdconf.each { | file |
+	  diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
+	  m.mask_tdlog(file, clean = true)
+	}
+        tdlog.each { | file |
           diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
           filename = file.split("/")[-1]
           if filename.include?(".gz")
@@ -153,30 +183,37 @@ module Diagtool
           elsif
             m.mask_tdlog(file, clean = true)
           end
-        end
+	}
       end
       
       if @conf[:mask] == 'yes'
         diaglogger_info("[Mask] Export mask log file : #{@masklog}")
         m.export_masklog(@masklog)
       end
-      
+
       tar_file = c.compress_output()
       diaglogger_info("[Collect] Generate tar file #{tar_file}")
     end
 
     def parse_diagconf(params)
       options = {
-        :basedir => '', :mask => '', :words => [], :wfile => '', :seed => ''
+        :precheck => '', :basedir => '', :mask => '', :words => [], :wfile => '', :seed => '', :tdconf =>'', :tdlog => ''
       }
-      if params[:output] != nil
-        if Dir.exist?(params[:output])
-          options[:basedir] = params[:output]
-        else
-          raise "output directory '#{basedir}' does not exist"
-        end
+      if params[:precheck]
+        options[:precheck] = params[:precheck]
       else
-        raise "output directory '-o' must be specified"
+        options[:precheck] = false
+      end
+      if options[:precheck] == false
+        if params[:output] != nil
+          if Dir.exist?(params[:output])
+            options[:basedir] = params[:output]
+          else
+            raise "output directory '#{basedir}' does not exist"
+          end
+        else
+          raise "output directory '-o' must be specified"
+        end
       end
       if params[:mask] == nil
         options[:mask] = 'no'
@@ -200,6 +237,25 @@ module Diagtool
       end
       options[:words] = options[:words].uniq 
       options[:seed] = params[:"hash-seed"] if params[:"hash-seed"] != nil
+      
+      if params[:conf] != nil
+        f = params[:conf]
+        if File.exist?(f)
+	  options[:tdconf] = params[:conf]
+        else
+          raise "#{params[:conf]} : No such file or directory"
+        end
+      end
+
+      if params[:log] != nil
+        f = params[:log]
+        if File.exist?(f)
+          options[:tdlog] = params[:log]
+        else
+          raise "#{params[:log]} : No such file or directory"
+        end
+      end
+
       return options	
     end
     

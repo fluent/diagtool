@@ -17,8 +17,7 @@ The scope of data collection:
   - snapshot of current process(ps)
   - network conectivity status/stats(netstat -plan/netstat -s)
   - memory information(/proc/meminfo)
-<br>  
-(*) The diagtool automatically gather the path of td-agent configuration files and log files from td-agent daemon and use them during data collection. 
+<br>   
 
 ## Prerequisite
 The diagtool provides support for td-agent based installation running on Linux OS. The td-agent is a stable distribution package of Fluentd.  
@@ -43,13 +42,54 @@ Successfully installed fluent-diagtool-0.1.2
 ```
 # diagtool --help
 Usage: /usr/local/bin/diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}
+        --precheck                   Run Precheck (Optional)
     -o, --output DIR                 Output directory (Mandatory)
     -m, --mask yes|no                Enable mask function (Optional : Default=no)
     -w, --word-list word1,word2      Provide a list of user-defined words which will to be masked (Optional : Default=None)
-    -f, --word-file listfile         provide a file which describes a List of user-defined words (Optional : Default=None)
+    -f, --word-file list_file        provide a file which describes a List of user-defined words (Optional : Default=None)
     -s, --hash-seed seed             provide a word which will be used when generate the mask (Optional : Default=None)
+    -c, --conf config_file           provide a full path of td-agent configuration file (Optional : Default=None)
+    -l, --log log_file               provide a full path of td-agent log file (Optional : Default=None)
 ```
-The list of user-defined words can be specified both -e option and -f option.
+### Pre-check
+The diagtool automatically extract the path of td-agent configuration and log files from td-agent daemon and use them during data collection if the td-agent is managed as daemon. The precheck options provides the function to confirm if the diagtool could gather the td-agent information as expected. 
+The following command output shows the case when the diagtool successfully gather information from daemon.
+```
+# diagtool --precheck
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Check OS parameters...
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    operating system = CentOS Linux 8 (Core)
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    kernel version = Linux 4.18.0-147.el8.x86_64
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Check td-agent parameters...
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent conf path = /etc/td-agent/
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent conf file = td-agent.conf
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent log path = /var/log/td-agent/
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent log = td-agent.log
+2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Precheck completed. You can run diagtool command without -c and -l options
+```
+In some cases, users do not manage td-agent as daemon but use own script to run td-agent with command line options. In that cases, users need to speccify the path of td-agent configuration and log files with -c and -l options respectively.  
+The following example shows the precheck results when the diagtool is not able to extract the path of td-agent configuration and log files.
+```
+# diagtool --precheck
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck] Check OS parameters...
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    operating system = CentOS Linux 8 (Core)
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    kernel version = Linux 4.18.0-147.5.1.el8_1.x86_64
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck] Check td-agent parameters...
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    td-agent conf path =
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    td-agent conf file =
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    td-agent log path =
+2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    td-agent log =
+2020-05-28 05:45:14 +0000: [Diagtool] [WARN] [Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>
+2020-05-28 05:45:14 +0000: [Diagtool] [WARN] [Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>
+```
+
+### Run diagtool
+
+#### The "@include" directive in td-agent configuration file
+The "@include" directive is a function to reuse configuration defined in another configuration files. The diagtool read the td-agent configuration and collect the files described in "@include" directive as well. The details of "@include" directive are described in followed url:  
+https://docs.fluentd.org/configuration/config-file#6-re-use-your-config-the-include-directive
+
+#### User defined words to be masked 
+The user-defined words can be specified both -e option and -f option and the words are merged when both options are selected.
 The format of user-defined words list file specified in -f option should be followed format.
 ```
 # cat word_list_sample
@@ -116,7 +156,7 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Export mask log file : ./mask_20200512182119.json
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Generate tar file /tmp/work1/diagout-20200512182119.tar.gz
 ```
-## Mask Function
+#### Mask Function
 When run diagtool with mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each files.  
 The diagtool provides hash-seed option with '-s'. When hash-seed is specified, the mask will be generated with original word and hash-seed so that users could use unique mask value.
 #### Mask sample - IP address: IPv4_{md5hash}
