@@ -37,6 +37,16 @@ Fetching: fluent-diagtool-0.1.2.gem (100%)
 Successfully installed fluent-diagtool-0.1.2
 3 gems installed
 ```
+When you are using td-agent, fluent-adiagtool should be installed using /usr/sbin/td-agent-gem command instead of gem command.
+```
+# /usr/sbin/td-agent-gem install fluent-diagtool
+Fetching fluent-diagtool-0.1.9.gem
+Successfully installed fluent-diagtool-0.1.9
+Parsing documentation for fluent-diagtool-0.1.9
+Installing ri documentation for fluent-diagtool-0.1.9
+Done installing documentation for fluent-diagtool after 0 seconds
+1 gem installed
+```
 
 ## Usage
 ```
