@@ -1,6 +1,6 @@
 # Fluentd Diagnostic Tool
 
-The diagtool enable users to automate the date collection which is required for trouble shooting. The data collected by diagtool include the configuration and log files of the td-agent and diagnostic information of operating system such as network and memory status and stats. In some cases, configuration and log files contains the security sensitive information, such as IP addresses and Hostname. The diagtool also provides the functions to generate mask on IP addresses, Hostname(in FQDN style) and user defined keywords described in the collected data.   
+The diagtool enables users to automate the date collection which is required for troubleshooting. The data collected by diagtool include the configuration and log files of the td-agent and diagnostic information from an operating system such as network and memory status and stats. In some cases, configuration and log files contain security sensitive information, such as IP addresses and Hostname. The diagtool also provides the functions to generate masks on IP addresses, Hostname(in FQDN style) and user defined keywords described in the collected data.   
 The scope of data collection:  
 - TD Agent information
   - configuration files (*)
@@ -15,7 +15,7 @@ The scope of data collection:
     - maximum number of file descriptor(ulimit -n)
     - kernel network parameters(sysctl)
   - snapshot of current process(ps)
-  - network conectivity status/stats(netstat -plan/netstat -s)
+  - network connectivity status/stats(netstat -plan/netstat -s)
   - memory information(/proc/meminfo)
 <br>   
 
@@ -76,7 +76,7 @@ The following command output shows the case when the diagtool successfully gathe
 2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent log = td-agent.log
 2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Precheck completed. You can run diagtool command without -c and -l options
 ```
-In some cases, users do not manage td-agent as daemon but use own script to run td-agent with command line options. In that cases, users need to speccify the path of td-agent configuration and log files with -c and -l options respectively.  
+In some cases, users do not manage td-agent as daemon but use their own scripts to run td-agent with command line options. In that cases, users need to specify the path of td-agent configuration and log files with -c and -l options respectively.  
 The following example shows the precheck results when the diagtool is not able to extract the path of td-agent configuration and log files.
 ```
 # diagtool --precheck
@@ -95,7 +95,7 @@ The following example shows the precheck results when the diagtool is not able t
 ### Run diagtool
 
 #### The "@include" directive in td-agent configuration file
-The "@include" directive is a function to reuse configuration defined in another configuration files. The diagtool read the td-agent configuration and collect the files described in "@include" directive as well. The details of "@include" directive are described in followed url:  
+The "@include" directive is a function to reuse configuration defined in other configuration files. The diagtool reads the td-agent configuration and collects the files described in "@include" directive as well. The details of "@include" directive are described in followed url:  
 https://docs.fluentd.org/configuration/config-file#6-re-use-your-config-the-include-directive
 
 #### User defined words to be masked 
@@ -167,8 +167,8 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Generate tar file /tmp/work1/diagout-20200512182119.tar.gz
 ```
 #### Mask Function
-When run diagtool with mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each files.  
-The diagtool provides hash-seed option with '-s'. When hash-seed is specified, the mask will be generated with original word and hash-seed so that users could use unique mask value.
+When run diagtool with the mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each file.  
+The diagtool provides a hash-seed option with '-s'. When hash-seed is specified, the mask will be generated with the original word and hash-seed so that users could use a unique mask value.
 #### Mask sample - IP address: IPv4_{md5hash}
 ```
     "Line112-8": {
