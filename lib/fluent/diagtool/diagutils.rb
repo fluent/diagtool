@@ -119,10 +119,10 @@ module Diagtool
       diaglogger_info("[Collect] Collecting date/time information...")
       if system('which chronyc > /dev/null 2>&1')
         ntp = c.collect_cmd_output(command="chronyc sources")
-	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
+	      diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       elsif system('which ntpq > /dev/null 2>&1')
         ntp = c.collect_cmd_output(command="ntpq -p")
-	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
+	      diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       else
         diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig date/time information")
       end
@@ -131,13 +131,13 @@ module Diagtool
       #  Correct OS information
       ###
       @cmd_list.each { |cmd|
-	diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
-	out = c.collect_cmd_output(cmd)
-	if @conf[:mask] == 'yes'
+	      diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
+	      out = c.collect_cmd_output(cmd)
+	      if @conf[:mask] == 'yes'
           diaglogger_info("[Mask] Masking netstat file : #{out}...")
           out = m.mask_tdlog(out, clean = true)
         end
-	diaglogger_info("[Collect] Collecting command output #{cmd.split[0]} stored in #{out}")
+	      diaglogger_info("[Collect] Collecting command output #{cmd.split[0]} stored in #{out}")
       }
 			
       ###
@@ -171,10 +171,10 @@ module Diagtool
       end
 
       if @conf[:mask] == 'yes'
-	tdconf.each { | file |
-	  diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
-	  m.mask_tdlog(file, clean = true)
-	}
+	      tdconf.each { | file |
+	        diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
+	        m.mask_tdlog(file, clean = true)
+	      }
         tdlog.each { | file |
           diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
           filename = file.split("/")[-1]
@@ -183,7 +183,7 @@ module Diagtool
           elsif
             m.mask_tdlog(file, clean = true)
           end
-	}
+	      }
       end
       
       if @conf[:mask] == 'yes'
@@ -221,6 +221,8 @@ module Diagtool
       ### Parse fluent type
       if params[:type]
         options[:type] = params[:type]
+      else
+        raise "fluentd type '-t' must be specified"
       end
 
       ### Parse mask flag

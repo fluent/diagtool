@@ -30,12 +30,15 @@ module Diagtool
       @basedir = conf[:basedir]
       @workdir = conf[:workdir]
       @outdir = conf[:outdir]
-      @tdenv = {}			
+      @tdenv = {
+        'FLUENT_CONF' => 'test',
+        'TD_AGENT_LOG_FILE' => 'test'
+      }			
       
       if @type == 'fluentd'
-        get_fluentd_info()
+        _get_fluentd_info()
       else @type == 'fluentbit'
-        get_fluentbit_info()
+        _get_fluentbit_info()
       end
 
       if not conf[:tdconf].empty?
@@ -58,9 +61,9 @@ module Diagtool
           @tdlog_path = @tdenv['TD_AGENT_LOG_FILE'].gsub(@tdlog,'')
         else
           raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
-	end
+	      end
       end 
-      @osenv = get_os_info()
+      @osenv = _get_os_info()
       @oslog_path = '/var/log/'
       @oslog = 'messages'
       @syslog = 'syslog'
@@ -76,7 +79,7 @@ module Diagtool
       @logger.info("    td-agent log = #{@tdlog}")
     end
     
-    def get_os_info()
+    def _get_os_info()
       stdout, stderr, status = Open3.capture3('hostnamectl')
       os_dict = {}
       stdout.each_line { |l|
@@ -91,8 +94,9 @@ module Diagtool
       return os_dict
     end
     
-    def get_fluentd_info()
+    def _get_fluentd_info()
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
+      puts status
       ### if the td-agent is run as daemon
       if status.success?
         if @precheck == false  # SKip if precheck is true
@@ -107,6 +111,7 @@ module Diagtool
         end
       ### if the td-agent is not run as daemon or run Fluentd with customized script
       else
+        p 'testtesttest'
         exe = 'fluentd'
         stdout, stderr, status = Open3.capture3("ps aux | grep #{exe} | grep -v grep")
         line = stdout.split(/\n/)
@@ -117,11 +122,11 @@ module Diagtool
             cmd.each { |c|
               if c.include?("--log") || c.include?("-l")
                 puts c
-                log_pos = i + 1
+                #log_pos = i + 1
                 @tdenv['FLUENT_CONF'] = cmd[1]
               elsif c.include?("--conf") || c.include?("-c")
                 puts c
-                conf_pos = i + 1
+                #conf_pos = i + 1
                 @tdenv['TD_AGENT_LOG_FILE'] = cmd[1]
               end
               i+=1
@@ -131,7 +136,7 @@ module Diagtool
       end
     end
     
-    def get_fluentbit_info()
+    def _get_fluentbit_info()
       puts "fluentbit_info"
     end
 
