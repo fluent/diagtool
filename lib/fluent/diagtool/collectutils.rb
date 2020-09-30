@@ -25,22 +25,29 @@ module Diagtool
         "#{datetime}: [Collectutils] [#{severity}] #{msg}\n"
       })
       @precheck = conf[:precheck]
+      @type = conf[:type]
       @time_format = conf[:time]
       @basedir = conf[:basedir]
       @workdir = conf[:workdir]
-      @outdir = conf[:outdir]			
-       
-      @tdenv = gen_tdenv()
+      @outdir = conf[:outdir]
+      @tdenv = {}			
+      
+      if @type == 'fluentd'
+        get_fluentd_info()
+      else @type == 'fluentbit'
+        get_fluentbit_info()
+      end
+
       if not conf[:tdconf].empty?
-	@tdconf = conf[:tdconf].split('/')[-1]
+	      @tdconf = conf[:tdconf].split('/')[-1]
         @tdconf_path = conf[:tdconf].gsub(@tdconf,'')
       elsif
-	if not @tdenv['FLUENT_CONF'].empty?
+	      if not @tdenv['FLUENT_CONF'].empty?
       	  @tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
       	  @tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
-	else
-	  raise "The path of td-agent configuration file need to be specified."  if conf[:precheck] == false
-	end
+	      else
+	        raise "The path of td-agent configuration file need to be specified."  if conf[:precheck] == false
+	      end
       end
       if not conf[:tdlog].empty?
         @tdlog = conf[:tdlog].split('/')[-1]
@@ -53,7 +60,7 @@ module Diagtool
           raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
 	end
       end 
-      @osenv = gen_osenv()
+      @osenv = get_os_info()
       @oslog_path = '/var/log/'
       @oslog = 'messages'
       @syslog = 'syslog'
@@ -69,7 +76,7 @@ module Diagtool
       @logger.info("    td-agent log = #{@tdlog}")
     end
     
-    def gen_osenv()
+    def get_os_info()
       stdout, stderr, status = Open3.capture3('hostnamectl')
       os_dict = {}
       stdout.each_line { |l|
@@ -84,50 +91,50 @@ module Diagtool
       return os_dict
     end
     
-    def gen_tdenv()
+    def get_fluentd_info()
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
-      env_dict = {}
+      ### if the td-agent is run as daemon
       if status.success?
-	if @precheck == false  # SKip if precheck is true
+        if @precheck == false  # SKip if precheck is true
           File.open(@outdir+'/td-agent_env.output', 'w') do |f|
             f.puts(stdout)
           end
-	end  
+	      end  
         stdout.split().each do | l |
           if l.include?('Environment')
-            env_dict[l.split('=')[1]] = l.split('=')[2]
+            @tdenv[l.split('=')[1]] = l.split('=')[2]
           end
-      	end
+        end
+      ### if the td-agent is not run as daemon or run Fluentd with customized script
       else
         exe = 'fluentd'
         stdout, stderr, status = Open3.capture3("ps aux | grep #{exe} | grep -v grep")
         line = stdout.split(/\n/)
-	log_path = ''
-        conf_path = ''
         line.each { |l|
           cmd = l.split.drop(10)
           i = 0
-          log_pos = 0
-          conf_pos = 0
           if cmd[-1] != '--under-supervisor'
             cmd.each { |c|
               if c.include?("--log") || c.include?("-l")
+                puts c
                 log_pos = i + 1
-                log_path = cmd[log_pos]
+                @tdenv['FLUENT_CONF'] = cmd[1]
               elsif c.include?("--conf") || c.include?("-c")
+                puts c
                 conf_pos = i + 1
-                conf_path = cmd[conf_pos]
+                @tdenv['TD_AGENT_LOG_FILE'] = cmd[1]
               end
               i+=1
             }
-	  end
-	}
-        env_dict['FLUENT_CONF'] = conf_path
-        env_dict['TD_AGENT_LOG_FILE'] = log_path
+	       end
+        }
       end
-      return env_dict
     end
     
+    def get_fluentbit_info()
+      puts "fluentbit_info"
+    end
+
     def export_env()
       env = {
         :os => @osenv['Operating System'],
@@ -157,24 +164,24 @@ module Diagtool
               FileUtils.cp(ff, conf_inc)
               conf_list.push conf_inc
              }
-	  else 
-	    conf_inc = target_dir+f.gsub(/\//,'__')
+	        else 
+	          conf_inc = target_dir+f.gsub(/\//,'__')
             FileUtils.cp(f, conf_inc)
             conf_list.push  conf_inc
-	  end
+	        end
         else
-	  f = f.gsub('./','') if f.include?('./')
+	        f = f.gsub('./','') if f.include?('./')
           if f.include?('*')
             Dir.glob(@tdconf_path+f).each{ |ff|
               conf_inc = target_dir + ff.gsub(@tdconf_path,'').gsub(/\//,'__')
               FileUtils.cp(ff, conf_inc)
               conf_list.push conf_inc
             }
-	  else
+	        else
             conf_inc = target_dir+f.gsub(/\//,'__')
             FileUtils.cp(@tdconf_path+f, conf_inc)
             conf_list.push  conf_inc
-	  end
+	        end
         end
       end
      }
@@ -200,7 +207,7 @@ module Diagtool
         FileUtils.cp(@oslog_path+@syslog, target_dir)
         return target_dir+@syslog
       else
-	@logger.warn("Can not find OS log file in #{oslog} or #{syslog}")
+	      @logger.warn("Can not find OS log file in #{oslog} or #{syslog}")
       end
     end
 
@@ -220,7 +227,7 @@ module Diagtool
       output = @outdir+'/'+cmd_name+'.txt'
       stdout, stderr, status = Open3.capture3(cmd)
       if status.success?
-	File.open(output, 'w') do |f|
+	      File.open(output, 'w') do |f|
           f.puts(stdout)
         end
       else

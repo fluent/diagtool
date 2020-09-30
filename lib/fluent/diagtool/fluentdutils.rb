@@ -27,11 +27,10 @@ module Diagtool
       time = Time.new
       @time_format = time.strftime("%Y%m%d%0k%M%0S")
       @conf = parse_diagconf(params)
-      @cmd_list = [ 
-        "ps -eo pid,ppid,stime,time,%mem,%cpu,cmd",
-        "cat /proc/meminfo",
-	      "netstat -plan",
-	      "netstat -s",
+      @cmd_list = [ "ps -eo pid,ppid,stime,time,%mem,%cpu,cmd",
+	"cat /proc/meminfo",
+	"netstat -plan",
+	"netstat -s",
       ]
     end
     
@@ -51,13 +50,13 @@ module Diagtool
       prechecklog.info("[Precheck]    td-agent log path = #{c_env[:tdlog_path]}")
       prechecklog.info("[Precheck]    td-agent log = #{c_env[:tdlog]}")
       if c_env[:tdconf_path] == nil || c_env[:tdconf] == nil
-	      prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
+	prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
       end
       if c_env[:tdlog_path] == nil || c_env[:tdlog] == nil
         prechecklog.warn("[Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>")
       end
       if c_env[:tdconf_path] != nil && c_env[:tdconf] != nil && c_env[:tdlog_path] != nil && c_env[:tdlog] != nil
-	       prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
+	 prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
       end
     end
 
@@ -197,10 +196,8 @@ module Diagtool
 
     def parse_diagconf(params)
       options = {
-        :precheck => '', :basedir => '', :type =>'', :mask => '', :words => [], :wfile => '', :seed => '', :tdconf =>'', :tdlog => ''
+        :precheck => '', :basedir => '', :mask => '', :words => [], :wfile => '', :seed => '', :tdconf =>'', :tdlog => ''
       }
-
-      ### Parse precheck flag
       if params[:precheck]
         options[:precheck] = params[:precheck]
       else
@@ -217,13 +214,6 @@ module Diagtool
           raise "output directory '-o' must be specified"
         end
       end
-
-      ### Parse fluent type
-      if params[:type]
-        options[:type] = params[:type]
-      end
-
-      ### Parse mask flag
       if params[:mask] == nil
         options[:mask] = 'no'
       else
@@ -233,11 +223,7 @@ module Diagtool
           raise "invalid arguments '#{params[:mask]}' : input of '-m|--mask' should be 'yes' or 'no'"
         end
       end
-      
-      ### Parse uder-defined keyword list which will be used in the mask function 
       options[:words] = params[:"word-list"] if params[:"word-list"] != nil
-
-      ### Parse uder-defined keyword file which will be used in the mask function 
       if params[:"word-file"] != nil
         f = params[:"word-file"]
         if File.exist?(f)
@@ -249,21 +235,17 @@ module Diagtool
         end
       end
       options[:words] = options[:words].uniq 
-
-      ### Parse hash seed which will be used in the mask function 
       options[:seed] = params[:"hash-seed"] if params[:"hash-seed"] != nil
-
-      ### Parse the path of fluentd config file
+      
       if params[:conf] != nil
         f = params[:conf]
         if File.exist?(f)
-	        options[:tdconf] = params[:conf]
+	  options[:tdconf] = params[:conf]
         else
           raise "#{params[:conf]} : No such file or directory"
         end
       end
 
-      ### Parse the path of fluentd log file
       if params[:log] != nil
         f = params[:log]
         if File.exist?(f)

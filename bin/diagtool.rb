@@ -16,6 +16,9 @@ opt.banner = "Usage: #{$0} -o OUTPUT_DIR -m {yes | no} -e {word1,[word2...]} -f 
 opt.on('-o','--output DIR', String, 'Output directory (Default=./output)') { |o|
 	output_dir = o 
 }
+opt.on('-t','--type fluentd|fluentbit', String, 'Output directory (Default=./output)') { |t|
+	fluent_type = t
+}
 opt.on('-m','--mask YES|NO', String, 'Enable mask function (Default=True)') { |m| 
 	if m == 'yes' || m == 'no'
 		mask = m
