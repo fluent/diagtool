@@ -31,14 +31,15 @@ module Diagtool
       @workdir = conf[:workdir]
       @outdir = conf[:outdir]
       @tdenv = {
-        'FLUENT_CONF' => 'test',
-        'TD_AGENT_LOG_FILE' => 'test'
+        'FLUENT_CONF' => '',
+        'TD_AGENT_LOG_FILE' => ''
       }			
       
-      if @type == 'fluentd'
-        _get_fluentd_info()
-      else @type == 'fluentbit'
-        _get_fluentbit_info()
+      case @type
+      when 'fluentd'
+        _find_fluentd_info()
+      when 'fluentbit'
+        _find_fluentbit_info()
       end
 
       if not conf[:tdconf].empty?
@@ -63,12 +64,12 @@ module Diagtool
           raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
 	      end
       end 
-      @osenv = _get_os_info()
+      @osenv = _find_os_info()
       @oslog_path = '/var/log/'
       @oslog = 'messages'
       @syslog = 'syslog'
       @sysctl_path = '/etc/'
-      @sysctl = 'sysctl.conf'        
+      @sysctl = 'sysctl.conf'
 
       @logger.info("Loading the environment parameters...")
       @logger.info("    operating system = #{@osenv['Operating System']}")
@@ -79,7 +80,7 @@ module Diagtool
       @logger.info("    td-agent log = #{@tdlog}")
     end
     
-    def _get_os_info()
+    def _find_os_info()
       stdout, stderr, status = Open3.capture3('hostnamectl')
       os_dict = {}
       stdout.each_line { |l|
@@ -94,9 +95,8 @@ module Diagtool
       return os_dict
     end
     
-    def _get_fluentd_info()
+    def _find_fluentd_info()
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
-      puts status
       ### if the td-agent is run as daemon
       if status.success?
         if @precheck == false  # SKip if precheck is true
@@ -111,32 +111,31 @@ module Diagtool
         end
       ### if the td-agent is not run as daemon or run Fluentd with customized script
       else
-        p 'testtesttest'
         exe = 'fluentd'
         stdout, stderr, status = Open3.capture3("ps aux | grep #{exe} | grep -v grep")
-        line = stdout.split(/\n/)
-        line.each { |l|
-          cmd = l.split.drop(10)
-          i = 0
-          if cmd[-1] != '--under-supervisor'
-            cmd.each { |c|
-              if c.include?("--log") || c.include?("-l")
-                puts c
-                #log_pos = i + 1
-                @tdenv['FLUENT_CONF'] = cmd[1]
-              elsif c.include?("--conf") || c.include?("-c")
-                puts c
-                #conf_pos = i + 1
-                @tdenv['TD_AGENT_LOG_FILE'] = cmd[1]
-              end
-              i+=1
-            }
-	       end
-        }
+        if status.success?
+          line = stdout.split(/\n/)
+          line.each { |l|
+            cmd = l.split.drop(10)
+            i = 0
+            if cmd[-1] != '--under-supervisor'
+              cmd.each { |c|
+                if c.include?("--log") || c.include?("-l")
+                  @tdenv['FLUENT_CONF'] = cmd[i+1]
+                elsif c.include?("--conf") || c.include?("-c")
+                  @tdenv['TD_AGENT_LOG_FILE'] = cmd[i+1]
+                end
+                i+=1
+              }
+	         end
+          }
+        else
+          raise "No Fluentd proccess running"
+        end
       end
     end
     
-    def _get_fluentbit_info()
+    def _find_fluentbit_info()
       puts "fluentbit_info"
     end
 
