@@ -136,7 +136,44 @@ module Diagtool
     end
     
     def _find_fluentbit_info()
-      puts "fluentbit_info"
+      stdout, stderr, status = Open3.capture3('systemctl cat td-agent-bit')
+      ### if the td-agent-bit is run as daemon
+      if status.success?
+        if @precheck == false  # SKip if precheck is true
+          File.open(@outdir+'/td-agent-bit_env.output', 'w') do |f|
+            f.puts(stdout)
+          end
+        end
+        stdout.split(/\n/).each do | l |
+          if l.start_with?("ExecStart")
+            cmd = l.split("=")[1]
+            i =0
+            cmd.split().each do | c |
+              puts c
+              if c.include?("--conf") || c.include?("-c")
+                @tdenv['FLUENT_CONF'] = cmd.split()[i+1]
+              elsif c.include?("--log") || c.include?("-l")
+                @tdenv['TD_AGENT_LOG_FILE'] = cmd.split()[i+1]
+              end
+              i+=1
+            end
+          end
+        end
+      else
+        raise "No td-agent-bit proccess running"
+      end
+    end
+
+    def export_env()
+      env = {
+        :os => @osenv['Operating System'],
+        :kernel => @osenv['Kernel'],
+        :tdconf => @tdconf,
+        :tdconf_path => @tdconf_path,
+        :tdlog => @tdlog,
+        :tdlog_path => @tdlog_path
+      }
+      return env
     end
 
     def export_env()
@@ -158,38 +195,49 @@ module Diagtool
       conf = @workdir+@tdconf_path+@tdconf
       conf_list = []
       conf_list.push target_dir + @tdconf
-      File.readlines(conf).each { |line|
-      if line.include? '@include'
-        f = line.split()[1]
-        if f.start_with?(/\//)  # /tmp/work1/b.conf
-          if f.include?('*')
-            Dir.glob(f).each { |ff|
-              conf_inc = target_dir + ff.gsub(/\//,'__')
-              FileUtils.cp(ff, conf_inc)
-              conf_list.push conf_inc
-             }
-	        else 
-	          conf_inc = target_dir+f.gsub(/\//,'__')
-            FileUtils.cp(f, conf_inc)
-            conf_list.push  conf_inc
-	        end
-        else
-	        f = f.gsub('./','') if f.include?('./')
-          if f.include?('*')
-            Dir.glob(@tdconf_path+f).each{ |ff|
-              conf_inc = target_dir + ff.gsub(@tdconf_path,'').gsub(/\//,'__')
-              FileUtils.cp(ff, conf_inc)
-              conf_list.push conf_inc
-            }
-	        else
-            conf_inc = target_dir+f.gsub(/\//,'__')
-            FileUtils.cp(@tdconf_path+f, conf_inc)
-            conf_list.push  conf_inc
-	        end
-        end
-      end
-     }
+      conf_list = conf_list + _collect_tdconf_include(conf)
      return conf_list
+    end
+
+    def _collect_tdconf_include(conf)
+      target_dir = @workdir+@tdconf_path
+      include_list = []
+      File.readlines(conf).each { |line|
+        if line.start_with?('@include')
+          f = line.split()[1]
+          if f.start_with?('http')
+            puts "http"
+          else
+            if f.start_with?(/\//)  # /tmp/work1/b.conf
+              if f.include?('*')
+                Dir.glob(f).each { |ff|
+                  conf_inc = target_dir + ff.gsub(/\//,'+')
+                  FileUtils.cp(ff, conf_inc)
+                  include_list.push conf_inc
+                }
+              else 
+                conf_inc = target_dir+f.gsub(/\//,'+')
+                FileUtils.cp(f, conf_inc)
+                include_list.push  conf_inc
+              end
+            else
+              f = f.gsub('./','') if f.include?('./')
+              if f.include?('*')
+                Dir.glob(@tdconf_path+f).each{ |ff|
+                  conf_inc = target_dir + ff.gsub(@tdconf_path,'').gsub(/\//,'+')
+                  FileUtils.cp(ff, conf_inc)
+                  include_list.push conf_inc
+                }
+              else
+                conf_inc = target_dir+f.gsub(/\//,'+')
+                FileUtils.cp(@tdconf_path+f, conf_inc)
+                include_list.push  conf_inc
+              end
+            end
+          end
+        end
+      }
+      return include_list
     end
 
     def collect_tdlog()

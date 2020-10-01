@@ -219,10 +219,10 @@ module Diagtool
       end
 
       ### Parse fluent type
-      if params[:type]
+      if params[:type] == 'fluentd' || params[:type] == 'fluentbit'
         options[:type] = params[:type]
       else
-        raise "fluentd type '-t' must be specified"
+        raise "fluentd type '-t' must be specified (fluentd or fluentbit)"
       end
 
       ### Parse mask flag
