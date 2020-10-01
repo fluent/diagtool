@@ -120,9 +120,9 @@ module Diagtool
             i = 0
             if cmd[-1] != '--under-supervisor'
               cmd.each { |c|
-                if c.include?("--log") || c.include?("-l")
+                if c.include?("--conf") || c.include?("-c")
                   @tdenv['FLUENT_CONF'] = cmd[i+1]
-                elsif c.include?("--conf") || c.include?("-c")
+                elsif c.include?("--log") || c.include?("-l")
                   @tdenv['TD_AGENT_LOG_FILE'] = cmd[i+1]
                 end
                 i+=1
@@ -162,18 +162,6 @@ module Diagtool
       else
         raise "No td-agent-bit proccess running"
       end
-    end
-
-    def export_env()
-      env = {
-        :os => @osenv['Operating System'],
-        :kernel => @osenv['Kernel'],
-        :tdconf => @tdconf,
-        :tdconf_path => @tdconf_path,
-        :tdlog => @tdlog,
-        :tdlog_path => @tdlog_path
-      }
-      return env
     end
 
     def export_env()
