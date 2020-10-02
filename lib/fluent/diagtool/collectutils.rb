@@ -17,6 +17,8 @@
 require 'fileutils'
 require 'open3'
 require 'logger'
+require 'net/http'
+require 'uri'
 
 module Diagtool
   class CollectUtils
@@ -209,50 +211,59 @@ module Diagtool
       FileUtils.cp(@tdconf_path+@tdconf, target_dir)
       conf = @workdir+@tdconf_path+@tdconf
       conf_list = []
-      conf_list.push target_dir + @tdconf
-      conf_list = conf_list + _collect_tdconf_include(conf)
+      conf_list.push conf
+      case @type
+      when 'fluentd'
+        conf_list = conf_list + _collect_tdconf_include(conf)
+      when 'fluentbit'
+        conf_list = conf_list + _collect_tdconf_include(conf)        
      return conf_list
     end
 
-    def _collect_tdconf_include(conf)
+    def _colllect_tdconf_include(conf)
       target_dir = @workdir+@tdconf_path
-      include_list = []
-      File.readlines(conf).each { |line|
+      inc_list = []
+      File.readlines(conf).each do |line|
         if line.start_with?('@include')
-          f = line.split()[1]
-          if f.start_with?('http')
-            puts "http"
+          l = line.split()[1]
+          if l.start_with?('http')
+            uri = URI(l)
+            inc_http = target_dir + 'http' + uri.path.gsub('/','_')
+            File.open(inc_http, 'w') do |f|
+              f.puts(Net::HTTP.get(uri))
+            end
+            inc_list.push inc_http
           else
-            if f.start_with?(/\//)  # /tmp/work1/b.conf
-              if f.include?('*')
-                Dir.glob(f).each { |ff|
-                  conf_inc = target_dir + ff.gsub(/\//,'+')
-                  FileUtils.cp(ff, conf_inc)
-                  include_list.push conf_inc
+            if l.start_with?(/\//)  # /tmp/work1/b.conf
+              if l.include?('*')
+                Dir.glob(l).each { |ll|
+                  inc_conf = target_dir + ll.gsub(/\//,'+')
+                  FileUtils.cp(ll, inc_conf)
+                  inc_list.push inc_conf
                 }
               else 
-                conf_inc = target_dir+f.gsub(/\//,'+')
-                FileUtils.cp(f, conf_inc)
-                include_list.push  conf_inc
+                inc_conf = target_dir+l.gsub(/\//,'+')
+                FileUtils.cp(l, inc_conf)
+                inc_list.push inc_conf
               end
             else
-              f = f.gsub('./','') if f.include?('./')
-              if f.include?('*')
-                Dir.glob(@tdconf_path+f).each{ |ff|
-                  conf_inc = target_dir + ff.gsub(@tdconf_path,'').gsub(/\//,'+')
-                  FileUtils.cp(ff, conf_inc)
-                  include_list.push conf_inc
+              l = l.gsub('./','') if l.include?('./')
+              if l.include?('*')
+                Dir.glob(@tdconf_path+f).each{ |ll|
+                  inc_conf = target_dir + ll.gsub(@tdconf_path,'').gsub(/\//,'+')
+                  FileUtils.cp(ll, inc_conf)
+                  inc_list.push inc_conf
                 }
               else
-                conf_inc = target_dir+f.gsub(/\//,'+')
-                FileUtils.cp(@tdconf_path+f, conf_inc)
-                include_list.push  conf_inc
+                inc_conf = target_dir+l.gsub(/\//,'+')
+                FileUtils.cp(@tdconf_path+l, inc_conf)
+                inc_list.push inc_conf
               end
             end
           end
         end
-      }
-      return include_list
+      end
+      return inc_list
     end
 
     def collect_tdlog()
@@ -290,7 +301,7 @@ module Diagtool
     end
 
     def collect_cmd_output(cmd)
-      if system(cmd)
+      if system(cmd + '> /dev/null 2>&1')
         cmd_name = cmd.gsub(/\s/,'_').gsub(/\//,'-').gsub(',','_')
         output = @outdir+'/'+cmd_name+'.txt'
         stdout, stderr, status = Open3.capture3(cmd)
