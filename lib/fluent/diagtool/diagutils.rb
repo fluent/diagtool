@@ -42,6 +42,7 @@ module Diagtool
       loglevel = 'WARN'
       c = CollectUtils.new(@conf, loglevel)
       c_env = c.export_env()
+      prechecklog.info("[Precheck] Fluentd Type = #{@conf[:type]}")
       prechecklog.info("[Precheck] Check OS parameters...")
       prechecklog.info("[Precheck]    operating system = #{c_env[:os]}")
       prechecklog.info("[Precheck]    kernel version = #{c_env[:kernel]}")
@@ -199,7 +200,6 @@ module Diagtool
       options = {
         :precheck => '', :basedir => '', :type =>'', :mask => '', :words => [], :wfile => '', :seed => '', :tdconf =>'', :tdlog => ''
       }
-
       ### Parse precheck flag
       if params[:precheck]
         options[:precheck] = params[:precheck]
@@ -217,14 +217,12 @@ module Diagtool
           raise "output directory '-o' must be specified"
         end
       end
-
       ### Parse fluent type
       if params[:type] == 'fluentd' || params[:type] == 'fluentbit'
         options[:type] = params[:type]
       else
         raise "fluentd type '-t' must be specified (fluentd or fluentbit)"
       end
-
       ### Parse mask flag
       if params[:mask] == nil
         options[:mask] = 'no'
@@ -235,7 +233,7 @@ module Diagtool
           raise "invalid arguments '#{params[:mask]}' : input of '-m|--mask' should be 'yes' or 'no'"
         end
       end
-      
+     
       ### Parse uder-defined keyword list which will be used in the mask function 
       options[:words] = params[:"word-list"] if params[:"word-list"] != nil
 

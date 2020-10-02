@@ -96,8 +96,8 @@ module Diagtool
     end
     
     def _find_fluentd_info()
+      ### check if the td-agent is run as daemon
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
-      ### if the td-agent is run as daemon
       if status.success?
         if @precheck == false  # SKip if precheck is true
           File.open(@outdir+'/td-agent_env.output', 'w') do |f|
@@ -109,58 +109,85 @@ module Diagtool
             @tdenv[l.split('=')[1]] = l.split('=')[2]
           end
         end
-      ### if the td-agent is not run as daemon or run Fluentd with customized script
       else
-        exe = 'fluentd'
-        stdout, stderr, status = Open3.capture3("ps aux | grep #{exe} | grep -v grep")
+        ### check if the td-agent is not run as daemon or run Fluentd with customized script
+        stdout, stderr, status = Open3.capture3('ps aux | grep fluentd | grep -v ".*\(grep\|diagtool\)"')
         if status.success?
           line = stdout.split(/\n/)
-          line.each { |l|
+          line.each do |l|
             cmd = l.split.drop(10)
             i = 0
             if cmd[-1] != '--under-supervisor'
-              cmd.each { |c|
-                if c.include?("--conf") || c.include?("-c")
+              cmd.each do |c|
+                case
+                when c == "-c"
                   @tdenv['FLUENT_CONF'] = cmd[i+1]
-                elsif c.include?("--log") || c.include?("-l")
+                when c == "-l"
                   @tdenv['TD_AGENT_LOG_FILE'] = cmd[i+1]
+                when c.include?("--conf")
+                  @tdenv['FLUENT_CONF'] = c.split("=")[1]
+                when c.include?("--log")
+                  @tdenv['TD_AGENT_LOG_FILE'] = c.split("=")[1]
                 end
                 i+=1
-              }
-	         end
-          }
+              end
+            end
+          end
         else
-          raise "No Fluentd proccess running"
+          @logger.warn("No Fluentd daemon or proccess running") 
         end
       end
     end
     
     def _find_fluentbit_info()
+      ### check if the td-agent-bit is run as daemon
       stdout, stderr, status = Open3.capture3('systemctl cat td-agent-bit')
-      ### if the td-agent-bit is run as daemon
       if status.success?
         if @precheck == false  # SKip if precheck is true
           File.open(@outdir+'/td-agent-bit_env.output', 'w') do |f|
             f.puts(stdout)
           end
         end
-        stdout.split(/\n/).each do | l |
-          if l.start_with?("ExecStart")
-            cmd = l.split("=")[1]
+        stdout.split(/\n/).each do | line |
+          if line.start_with?("ExecStart")
+            cmd = line.split("=")[1]
             i =0
             cmd.split().each do | c |
-              puts c
-              if c.include?("--conf") || c.include?("-c")
+              case
+              when c == "-c"
                 @tdenv['FLUENT_CONF'] = cmd.split()[i+1]
-              elsif c.include?("--log") || c.include?("-l")
+              when c == "-l"
                 @tdenv['TD_AGENT_LOG_FILE'] = cmd.split()[i+1]
+              when c.include?("--conf")
+                @tdenv['FLUENT_CONF'] = c.split("=")[1]
+              when c.include?("--log")
+                @tdenv['TD_AGENT_LOG_FILE'] = c.split("=")[1]
               end
               i+=1
             end
           end
         end
       else
-        raise "No td-agent-bit proccess running"
+        ### check if the td-agent-bit is not run as daemon or run FluentdBit with customized script 
+        stdout, stderr, status = Open3.capture3('ps aux | grep fluent-bit | grep -v ".*\(grep\|diagtool\)"')
+        if status.success?
+          i = 0
+          stdout.split().each do | line |
+            case
+            when line.include?("--conf")
+              @tdenv['FLUENT_CONF'] = line.split("=")[1]
+            when line.include?("--log")
+              @tdenv['TD_AGENT_LOG_FILE'] = line.split("=")[1]
+            when line == "-c"
+              @tdenv['FLUENT_CONF'] = stdout.split()[i+1]
+            when line == "-l"
+              @tdenv['TD_AGENT_LOG_FILE'] = stdout.split()[i+1]
+            end
+            i+=1
+          end
+        else
+          @logger.warn("No FluentBit daemon or proccess running")
+        end
       end
     end
 
@@ -263,15 +290,19 @@ module Diagtool
     end
 
     def collect_cmd_output(cmd)
-      cmd_name = cmd.gsub(/\s/,'_').gsub(/\//,'-').gsub(',','_')
-      output = @outdir+'/'+cmd_name+'.txt'
-      stdout, stderr, status = Open3.capture3(cmd)
-      if status.success?
-	      File.open(output, 'w') do |f|
-          f.puts(stdout)
+      if system(cmd)
+        cmd_name = cmd.gsub(/\s/,'_').gsub(/\//,'-').gsub(',','_')
+        output = @outdir+'/'+cmd_name+'.txt'
+        stdout, stderr, status = Open3.capture3(cmd)
+        if status.success?
+	        File.open(output, 'w') do |f|
+            f.puts(stdout)
+          end
+        else
+          @logger.warn("Command #{cmd} failed due to the following message -  #{stderr.chomp}")
         end
       else
-        @logger.warn("Command #{cmd} failed due to the following message -  #{stderr.chomp}")
+        @logger.warn("Command #{cmd} does not exist -  skip collecting #{cmd} output")
       end
       return output
     end
