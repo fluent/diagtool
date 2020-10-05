@@ -63,7 +63,12 @@ module Diagtool
           @tdlog =  @tdenv['TD_AGENT_LOG_FILE'].split('/')[-1]
           @tdlog_path = @tdenv['TD_AGENT_LOG_FILE'].gsub(@tdlog,'')
         else
-          raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
+          case @type
+          when 'fluentd'
+            raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
+          when 'fluentbit'
+            @logger.warn("FluentBit logs are redirected to the standard output interface ")
+          end
 	      end
       end 
       @osenv = _find_os_info()
@@ -216,11 +221,12 @@ module Diagtool
       when 'fluentd'
         conf_list = conf_list + _collect_tdconf_include(conf)
       when 'fluentbit'
-        conf_list = conf_list + _collect_tdconf_include(conf)        
-     return conf_list
+        conf_list = conf_list + _collect_tdconf_include(conf) + _collect_tdbit_parser(conf) + _collect_tdbit_plugins(conf) 
+      end   
+      return conf_list
     end
 
-    def _colllect_tdconf_include(conf)
+    def _collect_tdconf_include(conf)
       target_dir = @workdir+@tdconf_path
       inc_list = []
       File.readlines(conf).each do |line|
@@ -237,12 +243,12 @@ module Diagtool
             if l.start_with?(/\//)  # /tmp/work1/b.conf
               if l.include?('*')
                 Dir.glob(l).each { |ll|
-                  inc_conf = target_dir + ll.gsub(/\//,'+')
+                  inc_conf = target_dir + ll.gsub(/\//,'-')
                   FileUtils.cp(ll, inc_conf)
                   inc_list.push inc_conf
                 }
               else 
-                inc_conf = target_dir+l.gsub(/\//,'+')
+                inc_conf = target_dir+l.gsub(/\//,'-')
                 FileUtils.cp(l, inc_conf)
                 inc_list.push inc_conf
               end
@@ -250,12 +256,12 @@ module Diagtool
               l = l.gsub('./','') if l.include?('./')
               if l.include?('*')
                 Dir.glob(@tdconf_path+f).each{ |ll|
-                  inc_conf = target_dir + ll.gsub(@tdconf_path,'').gsub(/\//,'+')
+                  inc_conf = target_dir + ll.gsub(@tdconf_path,'').gsub(/\//,'-')
                   FileUtils.cp(ll, inc_conf)
                   inc_list.push inc_conf
                 }
               else
-                inc_conf = target_dir+l.gsub(/\//,'+')
+                inc_conf = target_dir+l.gsub(/\//,'-')
                 FileUtils.cp(@tdconf_path+l, inc_conf)
                 inc_list.push inc_conf
               end
@@ -264,6 +270,80 @@ module Diagtool
         end
       end
       return inc_list
+    end
+
+    def _collect_tdbit_parser(conf)
+      target_dir = @workdir+@tdconf_path
+      parser_conf = []
+      File.readlines(conf).each do |line|
+        if line.strip.start_with?('parsers_file') || line.strip.start_with?('Parsers_File')
+          l = line.split()[1]
+          if l.start_with?(/\//)  # /tmp/work1/b.conf
+            if l.include?('*')
+              Dir.glob(l).each { |ll|
+                pconf = target_dir + ll.gsub(/\//,'-')
+                FileUtils.cp(ll, pconf)
+                parser_conf.push(pconf)
+              }
+            else 
+              pconf = target_dir+l.gsub(/\//,'-')
+              FileUtils.cp(l, pconf)
+              parser_conf.push(pconf)
+            end
+          else
+            l = l.gsub('./','') if l.include?('./')
+            if l.include?('*')
+              Dir.glob(@tdconf_path+f).each{ |ll|
+                pconf = target_dir + ll.gsub(@tdconf_path,'').gsub(/\//,'-')
+                FileUtils.cp(ll, pconf)
+                parser_conf.push(pconf)
+              }
+            else
+              pconf = target_dir+l.gsub(/\//,'-')
+              FileUtils.cp(@tdconf_path+l, pconf)
+              parser_conf.push(pconf)
+            end
+          end
+        end
+      end  
+      return parser_conf
+    end
+
+    def _collect_tdbit_plugins(conf)
+      target_dir = @workdir+@tdconf_path
+      plugins_conf = []
+      File.readlines(conf).each do |line|
+        if line.strip.start_with?('plugins_file') || line.strip.start_with?('Plugins_File')
+          l = line.split()[1]
+          if l.start_with?(/\//)  # /tmp/work1/b.conf
+            if l.include?('*')
+              Dir.glob(l).each { |ll|
+                pconf = target_dir + ll.gsub(/\//,'-')
+                FileUtils.cp(ll, pconf)
+                plugins_conf.push(pconf)
+              }
+            else 
+              pconf = target_dir+l.gsub(/\//,'-')
+              FileUtils.cp(l, pconf)
+              plugins_conf.push(pconf)
+            end
+          else
+            l = l.gsub('./','') if l.include?('./')
+            if l.include?('*')
+              Dir.glob(@tdconf_path+f).each{ |ll|
+                pconf = target_dir + ll.gsub(@tdconf_path,'').gsub(/\//,'-')
+                FileUtils.cp(ll, pconf)
+                plugins_conf.push(pconf)
+              }
+            else
+              pconf = target_dir+l.gsub(/\//,'-')
+              FileUtils.cp(@tdconf_path+l, pconf)
+              plugins_conf.push(pconf)
+            end
+          end
+        end
+      end
+      return plugins_conf
     end
 
     def collect_tdlog()

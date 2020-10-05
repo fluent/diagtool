@@ -98,11 +98,23 @@ module Diagtool
       v = ValidUtils.new(loglevel)
 							
       diaglogger_info("[Collect] Collecting log files of td-agent...")
-      tdlog = c.collect_tdlog()
-      diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+      case @type
+      when 'fluentd'
+        tdlog = c.collect_tdlog()
+        diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+      when 'fleuntbit'
+        if tdlog.empty?
+          diaglogger_info("FluentBit logs are redirected to the standard output interface ")
+          tdlog = ''
+        else
+          tdlog = c.collect_tdlog()
+          diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+        end
+      end
 
       diaglogger_info("[Collect] Collecting config file of td-agent...")
       tdconf = c.collect_tdconf()
+      puts tdconf
       diaglogger_info("[Collect] config file is stored in #{tdconf}")
 
       diaglogger_info("[Collect] Collecting td-agent gem information...")
@@ -132,13 +144,15 @@ module Diagtool
       #  Correct OS information
       ###
       @cmd_list.each { |cmd|
-	      diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
-	      out = c.collect_cmd_output(cmd)
-	      if @conf[:mask] == 'yes'
-          diaglogger_info("[Mask] Masking netstat file : #{out}...")
-          out = m.mask_tdlog(out, clean = true)
+        diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
+        if system(cmd + '> /dev/null 2>&1')
+	        out = c.collect_cmd_output(cmd)
+	        if @conf[:mask] == 'yes'
+            diaglogger_info("[Mask] Masking command output file : #{out}...")
+            out = m.mask_tdlog(out, clean = true)
+          end
+          diaglogger_info("[Collect] Collecting command output #{cmd.split[0]} stored in #{out}")
         end
-	      diaglogger_info("[Collect] Collecting command output #{cmd.split[0]} stored in #{out}")
       }
 			
       ###
@@ -175,16 +189,21 @@ module Diagtool
 	      tdconf.each { | file |
 	        diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
 	        m.mask_tdlog(file, clean = true)
-	      }
-        tdlog.each { | file |
-          diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
-          filename = file.split("/")[-1]
-          if filename.include?(".gz")
-            m.mask_tdlog_gz(file, clean = true)
-          elsif
-            m.mask_tdlog(file, clean = true)
-          end
-	      }
+        }
+      end
+
+      if @conf[:mask] == 'yes'
+        if tdlog != nil
+          tdlog.each { | file |
+            diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
+            filename = file.split("/")[-1]
+            if filename.include?(".gz")
+              m.mask_tdlog_gz(file, clean = true)
+            elsif
+              m.mask_tdlog(file, clean = true)
+            end
+          }
+        end
       end
       
       if @conf[:mask] == 'yes'
