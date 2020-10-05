@@ -45,15 +45,15 @@ module Diagtool
       end
 
       if not conf[:tdconf].empty?
-	      @tdconf = conf[:tdconf].split('/')[-1]
+        @tdconf = conf[:tdconf].split('/')[-1]
         @tdconf_path = conf[:tdconf].gsub(@tdconf,'')
       elsif
-	      if not @tdenv['FLUENT_CONF'].empty?
-      	  @tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
+        if not @tdenv['FLUENT_CONF'].empty?
+          @tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
       	  @tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
-	      else
-	        raise "The path of td-agent configuration file need to be specified."  if conf[:precheck] == false
-	      end
+	else
+	  raise "The path of td-agent configuration file need to be specified."  if conf[:precheck] == false
+	end
       end
       if not conf[:tdlog].empty?
         @tdlog = conf[:tdlog].split('/')[-1]
@@ -110,7 +110,7 @@ module Diagtool
           File.open(@outdir+'/td-agent_env.output', 'w') do |f|
             f.puts(stdout)
           end
-	      end  
+        end  
         stdout.split().each do | l |
           if l.include?('Environment')
             @tdenv[l.split('=')[1]] = l.split('=')[2]
@@ -365,7 +365,7 @@ module Diagtool
         FileUtils.cp(@oslog_path+@syslog, target_dir)
         return target_dir+@syslog
       else
-	      @logger.warn("Can not find OS log file in #{oslog} or #{syslog}")
+        @logger.warn("Can not find OS log file in #{oslog} or #{syslog}")
       end
     end
 
@@ -386,7 +386,7 @@ module Diagtool
         output = @outdir+'/'+cmd_name+'.txt'
         stdout, stderr, status = Open3.capture3(cmd)
         if status.success?
-	        File.open(output, 'w') do |f|
+          File.open(output, 'w') do |f|
             f.puts(stdout)
           end
         else

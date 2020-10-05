@@ -52,13 +52,13 @@ module Diagtool
       prechecklog.info("[Precheck]    td-agent log path = #{c_env[:tdlog_path]}")
       prechecklog.info("[Precheck]    td-agent log = #{c_env[:tdlog]}")
       if c_env[:tdconf_path] == nil || c_env[:tdconf] == nil
-	      prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
+        prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
       end
       if c_env[:tdlog_path] == nil || c_env[:tdlog] == nil
         prechecklog.warn("[Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>")
       end
       if c_env[:tdconf_path] != nil && c_env[:tdconf] != nil && c_env[:tdlog_path] != nil && c_env[:tdlog] != nil
-	       prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
+        prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
       end
     end
 
@@ -132,10 +132,10 @@ module Diagtool
       diaglogger_info("[Collect] Collecting date/time information...")
       if system('which chronyc > /dev/null 2>&1')
         ntp = c.collect_cmd_output(command="chronyc sources")
-	      diaglogger_info("[Collect] date/time information is stored in #{ntp}")
+        diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       elsif system('which ntpq > /dev/null 2>&1')
         ntp = c.collect_cmd_output(command="ntpq -p")
-	      diaglogger_info("[Collect] date/time information is stored in #{ntp}")
+        diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       else
         diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig date/time information")
       end
@@ -146,8 +146,8 @@ module Diagtool
       @cmd_list.each { |cmd|
         diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
         if system(cmd + '> /dev/null 2>&1')
-	        out = c.collect_cmd_output(cmd)
-	        if @conf[:mask] == 'yes'
+          out = c.collect_cmd_output(cmd)
+          if @conf[:mask] == 'yes'
             diaglogger_info("[Mask] Masking command output file : #{out}...")
             out = m.mask_tdlog(out, clean = true)
           end
@@ -186,7 +186,7 @@ module Diagtool
       end
 
       if @conf[:mask] == 'yes'
-	      tdconf.each { | file |
+        tdconf.each { | file |
           diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
           m.mask_tdlog(file, clean = true)
         }
@@ -276,7 +276,7 @@ module Diagtool
       if params[:conf] != nil
         f = params[:conf]
         if File.exist?(f)
-	        options[:tdconf] = params[:conf]
+	  options[:tdconf] = params[:conf]
         else
           raise "#{params[:conf]} : No such file or directory"
         end
