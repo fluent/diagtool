@@ -187,8 +187,8 @@ module Diagtool
 
       if @conf[:mask] == 'yes'
 	      tdconf.each { | file |
-	        diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
-	        m.mask_tdlog(file, clean = true)
+          diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
+          m.mask_tdlog(file, clean = true)
         }
       end
 
