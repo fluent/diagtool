@@ -33,26 +33,28 @@ Successfully installed fileutils-1.0.2
 Fetching: json-2.1.0.gem (100%)
 Building native extensions. This could take a while...
 Successfully installed json-2.1.0
-Fetching: fluent-diagtool-0.1.2.gem (100%)
-Successfully installed fluent-diagtool-0.1.2
+Fetching: fluent-diagtool-1.0.0.gem (100%)
+Successfully installed fluent-diagtool-1.0.0
 3 gems installed
 ```
 When you are using td-agent, fluent-adiagtool should be installed using /usr/sbin/td-agent-gem command instead of gem command.
 ```
 # /usr/sbin/td-agent-gem install fluent-diagtool
-Fetching fluent-diagtool-0.1.9.gem
-Successfully installed fluent-diagtool-0.1.9
-Parsing documentation for fluent-diagtool-0.1.9
-Installing ri documentation for fluent-diagtool-0.1.9
+Fetching fluent-diagtool-1.0.0.gem
+Successfully installed fluent-diagtool-1.0.0
+Parsing documentation for fluent-diagtool-1.0.0
+Installing ri documentation for fluent-diagtool-1.0.0
 Done installing documentation for fluent-diagtool after 0 seconds
 1 gem installed
 ```
 
 ## Usage
+There are a few options in Diagtool. You can check the options of Diagtool with "--help" options. Diagtool performs the validation function in the process by default but you can turn on/off the mask function depending on the use cases.
 ```
 # diagtool --help
 Usage: /usr/local/bin/diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}
         --precheck                   Run Precheck (Optional)
+    -t, --type fluentd|fluentbit     Select the type of Fluentd (Mandatory)
     -o, --output DIR                 Output directory (Mandatory)
     -m, --mask yes|no                Enable mask function (Optional : Default=no)
     -w, --word-list word1,word2      Provide a list of user-defined words which will to be masked (Optional : Default=None)
@@ -62,10 +64,11 @@ Usage: /usr/local/bin/diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]}
     -l, --log log_file               provide a full path of td-agent log file (Optional : Default=None)
 ```
 ### Pre-check
-The diagtool automatically extract the path of td-agent configuration and log files from td-agent daemon and use them during data collection if the td-agent is managed as daemon. The precheck options provides the function to confirm if the diagtool could gather the td-agent information as expected. 
+The diagtool automatically parses the path of Fluentd configuration and log files from running Fluentd processes and daemon. The precheck options provides the function to confirm if the diagtool could gather the fluentd information as expected. 
 The following command output shows the case when the diagtool successfully gather information from daemon.
+You need to specify the type of Fluentd, "fluentd" or "fluentbit".
 ```
-# diagtool --precheck
+# diagtool --precheck -t fluentd
 2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Check OS parameters...
 2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    operating system = CentOS Linux 8 (Core)
 2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    kernel version = Linux 4.18.0-147.el8.x86_64
@@ -79,7 +82,7 @@ The following command output shows the case when the diagtool successfully gathe
 In some cases, users do not manage td-agent as daemon but use their own scripts to run td-agent with command line options. In that cases, users need to specify the path of td-agent configuration and log files with -c and -l options respectively.  
 The following example shows the precheck results when the diagtool is not able to extract the path of td-agent configuration and log files.
 ```
-# diagtool --precheck
+# diagtool --precheck -t fluentd
 2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck] Check OS parameters...
 2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    operating system = CentOS Linux 8 (Core)
 2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    kernel version = Linux 4.18.0-147.5.1.el8_1.x86_64
@@ -110,7 +113,7 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 
 #### Command sample:
 ```
-# diagtool -o /tmp/work1 -w passwd1,passwd2 -f word_list_sample -m yes
+# diagtool -t fluentd -o /tmp/work1 -w passwd1,passwd2 -f word_list_sample -m yes
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO] Parsing command options...
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Output directory = /tmp/work1
 2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Mask = yes
@@ -194,7 +197,7 @@ The diagtool provides a hash-seed option with '-s'. When hash-seed is specified,
 
 ## Tested Environment
 - OS : CentOS 8.1
-- Fluentd : td-agent version 3  
+- Fluentd : td-agent version 3/4 
   https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3
-
+- Fluentbit : td-agent-bit
 
