@@ -27,10 +27,11 @@ module Diagtool
       time = Time.new
       @time_format = time.strftime("%Y%m%d%0k%M%0S")
       @conf = parse_diagconf(params)
-      @cmd_list = [ "ps -eo pid,ppid,stime,time,%mem,%cpu,cmd",
-	"cat /proc/meminfo",
-	"netstat -plan",
-	"netstat -s",
+      @cmd_list = [ 
+        "ps -eo pid,ppid,stime,time,%mem,%cpu,cmd",
+        "cat /proc/meminfo",
+	      "netstat -plan",
+	      "netstat -s",
       ]
     end
     
@@ -41,6 +42,7 @@ module Diagtool
       loglevel = 'WARN'
       c = CollectUtils.new(@conf, loglevel)
       c_env = c.export_env()
+      prechecklog.info("[Precheck] Fluentd Type = #{@conf[:type]}")
       prechecklog.info("[Precheck] Check OS parameters...")
       prechecklog.info("[Precheck]    operating system = #{c_env[:os]}")
       prechecklog.info("[Precheck]    kernel version = #{c_env[:kernel]}")
@@ -50,13 +52,13 @@ module Diagtool
       prechecklog.info("[Precheck]    td-agent log path = #{c_env[:tdlog_path]}")
       prechecklog.info("[Precheck]    td-agent log = #{c_env[:tdlog]}")
       if c_env[:tdconf_path] == nil || c_env[:tdconf] == nil
-	prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
+        prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
       end
       if c_env[:tdlog_path] == nil || c_env[:tdlog] == nil
         prechecklog.warn("[Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>")
       end
       if c_env[:tdconf_path] != nil && c_env[:tdconf] != nil && c_env[:tdlog_path] != nil && c_env[:tdlog] != nil
-	 prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
+        prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
       end
     end
 
@@ -96,8 +98,19 @@ module Diagtool
       v = ValidUtils.new(loglevel)
 							
       diaglogger_info("[Collect] Collecting log files of td-agent...")
-      tdlog = c.collect_tdlog()
-      diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+      case @type
+      when 'fluentd'
+        tdlog = c.collect_tdlog()
+        diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+      when 'fleuntbit'
+        if tdlog.empty?
+          diaglogger_info("FluentBit logs are redirected to the standard output interface ")
+          tdlog = ''
+        else
+          tdlog = c.collect_tdlog()
+          diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+        end
+      end
 
       diaglogger_info("[Collect] Collecting config file of td-agent...")
       tdconf = c.collect_tdconf()
@@ -118,10 +131,10 @@ module Diagtool
       diaglogger_info("[Collect] Collecting date/time information...")
       if system('which chronyc > /dev/null 2>&1')
         ntp = c.collect_cmd_output(command="chronyc sources")
-	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
+        diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       elsif system('which ntpq > /dev/null 2>&1')
         ntp = c.collect_cmd_output(command="ntpq -p")
-	diaglogger_info("[Collect] date/time information is stored in #{ntp}")
+        diaglogger_info("[Collect] date/time information is stored in #{ntp}")
       else
         diaglogger_warn("[Collect] chrony/ntp does not exist. skip collectig date/time information")
       end
@@ -130,13 +143,15 @@ module Diagtool
       #  Correct OS information
       ###
       @cmd_list.each { |cmd|
-	diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
-	out = c.collect_cmd_output(cmd)
-	if @conf[:mask] == 'yes'
-          diaglogger_info("[Mask] Masking netstat file : #{out}...")
-          out = m.mask_tdlog(out, clean = true)
+        diaglogger_info("[Collect] Collecting command output : command = #{cmd}")
+        if system(cmd + '> /dev/null 2>&1')
+          out = c.collect_cmd_output(cmd)
+          if @conf[:mask] == 'yes'
+            diaglogger_info("[Mask] Masking command output file : #{out}...")
+            out = m.mask_tdlog(out, clean = true)
+          end
+          diaglogger_info("[Collect] Collecting command output #{cmd.split[0]} stored in #{out}")
         end
-	diaglogger_info("[Collect] Collecting command output #{cmd.split[0]} stored in #{out}")
       }
 			
       ###
@@ -170,19 +185,24 @@ module Diagtool
       end
 
       if @conf[:mask] == 'yes'
-	tdconf.each { | file |
-	  diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
-	  m.mask_tdlog(file, clean = true)
-	}
-        tdlog.each { | file |
-          diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
-          filename = file.split("/")[-1]
-          if filename.include?(".gz")
-            m.mask_tdlog_gz(file, clean = true)
-          elsif
-            m.mask_tdlog(file, clean = true)
-          end
-	}
+        tdconf.each { | file |
+          diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
+          m.mask_tdlog(file, clean = true)
+        }
+      end
+
+      if @conf[:mask] == 'yes'
+        if tdlog != nil
+          tdlog.each { | file |
+            diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
+            filename = file.split("/")[-1]
+            if filename.include?(".gz")
+              m.mask_tdlog_gz(file, clean = true)
+            elsif
+              m.mask_tdlog(file, clean = true)
+            end
+          }
+        end
       end
       
       if @conf[:mask] == 'yes'
@@ -196,8 +216,9 @@ module Diagtool
 
     def parse_diagconf(params)
       options = {
-        :precheck => '', :basedir => '', :mask => '', :words => [], :wfile => '', :seed => '', :tdconf =>'', :tdlog => ''
+        :precheck => '', :basedir => '', :type =>'', :mask => '', :words => [], :wfile => '', :seed => '', :tdconf =>'', :tdlog => ''
       }
+      ### Parse precheck flag
       if params[:precheck]
         options[:precheck] = params[:precheck]
       else
@@ -214,6 +235,13 @@ module Diagtool
           raise "output directory '-o' must be specified"
         end
       end
+      ### Parse fluent type
+      if params[:type] == 'fluentd' || params[:type] == 'fluentbit'
+        options[:type] = params[:type]
+      else
+        raise "fluentd type '-t' must be specified (fluentd or fluentbit)"
+      end
+      ### Parse mask flag
       if params[:mask] == nil
         options[:mask] = 'no'
       else
@@ -223,7 +251,11 @@ module Diagtool
           raise "invalid arguments '#{params[:mask]}' : input of '-m|--mask' should be 'yes' or 'no'"
         end
       end
+     
+      ### Parse uder-defined keyword list which will be used in the mask function 
       options[:words] = params[:"word-list"] if params[:"word-list"] != nil
+
+      ### Parse uder-defined keyword file which will be used in the mask function 
       if params[:"word-file"] != nil
         f = params[:"word-file"]
         if File.exist?(f)
@@ -235,8 +267,11 @@ module Diagtool
         end
       end
       options[:words] = options[:words].uniq 
+
+      ### Parse hash seed which will be used in the mask function 
       options[:seed] = params[:"hash-seed"] if params[:"hash-seed"] != nil
-      
+
+      ### Parse the path of fluentd config file
       if params[:conf] != nil
         f = params[:conf]
         if File.exist?(f)
@@ -246,6 +281,7 @@ module Diagtool
         end
       end
 
+      ### Parse the path of fluentd log file
       if params[:log] != nil
         f = params[:log]
         if File.exist?(f)

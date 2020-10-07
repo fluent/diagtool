@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fluent-diagtool (0.1.7)
+    fluent-diagtool (1.0.0)
       fileutils
       json
 
@@ -10,7 +10,7 @@ GEM
   specs:
     diff-lcs (1.3)
     fileutils (1.4.1)
-    json (2.3.0)
+    json (2.3.1)
     rake (12.3.3)
     rspec (3.9.0)
       rspec-core (~> 3.9.0)
