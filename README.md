@@ -1,10 +1,11 @@
 # Fluentd Diagnostic Tool
 
-The diagtool enables users to automate the date collection which is required for troubleshooting. The data collected by diagtool include the configuration and log files of the td-agent and diagnostic information from an operating system such as network and memory status and stats. In some cases, configuration and log files contain security sensitive information, such as IP addresses and Hostname. The diagtool also provides the functions to generate masks on IP addresses, Hostname(in FQDN style) and user defined keywords described in the collected data.   
+Diagtool enables users to automate the date collection which is required for troubleshooting. Diagtool gathers configuration and log files of Fluentd and diagnostic information from an operating system, such as process information and network status. In some cases, configuration and log files contain security sensitive information, such as IP addresses and Hostname. Diagtool has the functions to generate masks on IP addresses, Hostname(in FQDN style) and user defined keywords in the collected files.  
+ 
 The scope of data collection:  
-- TD Agent information
-  - configuration files (*)
-  - log files (*)
+- Fluentd information
+  - configuration files
+  - log files
   - td-agent environment values
   - installed td-agent-gem list
 - OS information
@@ -20,27 +21,16 @@ The scope of data collection:
 <br>   
 
 ## Prerequisite
-The diagtool provides support for td-agent based installation running on Linux OS. The td-agent is a stable distribution package of Fluentd.  
-The differences between Fluentd and td-agent are described in followed url:  
-https://www.fluentd.org/faqs
+Diagtool has been developed for Fluentd(td-agent) and FluentBit(td-agent-bit) running on Linux OS and Diatool does not work for Windows.
+Diagtool is written in Ruby and Ruby version should be higher than 2.3 for the installation. 
+The supported Linux OS is described in the following page:  
+https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3-vs-v4
 
 ## Diagtool Installation
 
+When you are using td-agent, you can install Diagtool easily with /usr/sbin/td-agent-gem command.
 ```
-# gem install fluent-diagtool
-Fetching: fileutils-1.0.2.gem (100%)
-Successfully installed fileutils-1.0.2
-Fetching: json-2.1.0.gem (100%)
-Building native extensions. This could take a while...
-Successfully installed json-2.1.0
-Fetching: fluent-diagtool-1.0.0.gem (100%)
-Successfully installed fluent-diagtool-1.0.0
-3 gems installed
-```
-When you are using td-agent, fluent-adiagtool should be installed using /usr/sbin/td-agent-gem command instead of gem command.
-```
-# /usr/sbin/td-agent-gem install fluent-diagtool
-Fetching fluent-diagtool-1.0.0.gem
+# /usr/sbin/td-agent-gem install fluent-diagtool-1.0.0.gem
 Successfully installed fluent-diagtool-1.0.0
 Parsing documentation for fluent-diagtool-1.0.0
 Installing ri documentation for fluent-diagtool-1.0.0
@@ -48,11 +38,21 @@ Done installing documentation for fluent-diagtool after 0 seconds
 1 gem installed
 ```
 
-## Usage
-There are a few options in Diagtool. You can check the options of Diagtool with "--help" options. Diagtool performs the validation function in the process by default but you can turn on/off the mask function depending on the use cases.
+Otherwise, you can install Diagtool with common gem command. In this case, Ruby version higher than 2.3 might be required to install.
 ```
-# diagtool --help
-Usage: /usr/local/bin/diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}
+# gem install fluent-diagtool
+Successfully installed fluent-diagtool-1.0.0
+Parsing documentation for fluent-diagtool-1.0.0
+Installing ri documentation for fluent-diagtool-1.0.0
+Done installing documentation for fluent-diagtool after 0 seconds
+1 gem installed
+```
+
+
+## Usage
+```
+# fluent-diagtool --help
+Usage: fluent-diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}
         --precheck                   Run Precheck (Optional)
     -t, --type fluentd|fluentbit     Select the type of Fluentd (Mandatory)
     -o, --output DIR                 Output directory (Mandatory)
@@ -63,26 +63,27 @@ Usage: /usr/local/bin/diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]}
     -c, --conf config_file           provide a full path of td-agent configuration file (Optional : Default=None)
     -l, --log log_file               provide a full path of td-agent log file (Optional : Default=None)
 ```
-### Pre-check
-The diagtool automatically parses the path of Fluentd configuration and log files from running Fluentd processes and daemon. The precheck options provides the function to confirm if the diagtool could gather the fluentd information as expected. 
-The following command output shows the case when the diagtool successfully gather information from daemon.
-You need to specify the type of Fluentd, "fluentd" or "fluentbit".
+### Precheck
+In order to run Diagtool correctly, it is required to ensure that Diagtool can obtain the fundamental information of Fluentd. Basically, Diagtool automatically parses the required information from the running Fluentd processes. The precheck option is useful to confirm if Diagtool certainly collects the information as expected. 
+The following output example shows the case where Diatool properly collects the required information.
+
 ```
-# diagtool --precheck -t fluentd
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Check OS parameters...
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    operating system = CentOS Linux 8 (Core)
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    kernel version = Linux 4.18.0-147.el8.x86_64
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Check td-agent parameters...
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent conf path = /etc/td-agent/
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent conf file = td-agent.conf
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent log path = /var/log/td-agent/
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck]    td-agent log = td-agent.log
-2020-05-28 00:39:02 -0400: [Diagtool] [INFO] [Precheck] Precheck completed. You can run diagtool command without -c and -l options
+# fluent-diagtool --precheck -t fluentd
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck] Fluentd Type = fluentd
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck] Check OS parameters...
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck]    operating system = CentOS Linux 7 (Core)
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck]    kernel version = Linux 3.10.0-1127.10.1.el7.x86_64
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck] Check td-agent parameters...
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck]    td-agent conf path = /etc/td-agent/
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck]    td-agent conf file = td-agent.conf
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck]    td-agent log path = /var/log/td-agent/
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck]    td-agent log = td-agent.log
+2020-10-07 21:20:33 +0000: [Diagtool] [INFO] [Precheck] Precheck completed. You can run diagtool command without -c and -l options
 ```
-In some cases, users do not manage td-agent as daemon but use their own scripts to run td-agent with command line options. In that cases, users need to specify the path of td-agent configuration and log files with -c and -l options respectively.  
-The following example shows the precheck results when the diagtool is not able to extract the path of td-agent configuration and log files.
+In some cases, Dialtool, with custom command line options, may fail to identify the path of Fluentd configuration and log files. You need to specify this information manually with “-c” and “-l” options. 
+The following example shows pre-check returns failure resulting Diagtool is not able to extract the path of td-agent configuration and log files.
 ```
-# diagtool --precheck -t fluentd
+# fluent-diagtool --precheck -t fluentd
 2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck] Check OS parameters...
 2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    operating system = CentOS Linux 8 (Core)
 2020-05-28 05:45:14 +0000: [Diagtool] [INFO] [Precheck]    kernel version = Linux 4.18.0-147.5.1.el8_1.x86_64
@@ -113,61 +114,63 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 
 #### Command sample:
 ```
-# diagtool -t fluentd -o /tmp/work1 -w passwd1,passwd2 -f word_list_sample -m yes
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] Parsing command options...
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Output directory = /tmp/work1
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Mask = yes
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Word list = ["passwd1", "passwd2", "centos8101", "centos8102"]
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO]    Option : Hash Seed =
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] Initializing parameters...
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] Loading the environment parameters...
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect]    operating system = CentOS Linux 8 (Core)
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect]    kernel version = Linux 4.18.0-147.el8.x86_64
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect]    td-agent conf path = /etc/td-agent/
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect]    td-agent conf file = td-agent.conf
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect]    td-agent log path = /var/log/td-agent/
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect]    td-agent log = td-agent.log
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] Collecting log files of td-agent...
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] log files of td-agent are stored in ["/tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200508.gz", "/tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200509.gz", "/tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200507.gz", "/tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200512", "/tmp/work1/20200512182119/var/log/td-agent/td-agent.log"]
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] Collecting config file of td-agent...
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] config file is stored in /tmp/work1/20200512182119/etc/td-agent/td-agent.conf
-2020-05-12 18:21:19 -0400: [Diagtool] [INFO] [Collect] Collecting td-agent gem information...
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] td-agent gem information is stored in /tmp/work1/20200512182119/etc/td-agent/tdgem_list.output
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] Collecting config file of OS log...
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Mask] Masking OS log file : /tmp/work1/20200512182119/var/log/messages...
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] config file is stored in /tmp/work1/20200512182119/var/log/messages.mask
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] Collecting OS memory information...
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] config file is stored in /tmp/work1/20200512182119/meminfo.output
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] Collecting date/time information...
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] date/time information is stored in /tmp/work1/20200512182119/ntp_info.output
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Collect] Collecting netstat information...
-2020-05-12 18:21:20 -0400: [Diagtool] [INFO] [Mask] Masking netstat file : /tmp/work1/20200512182119/netstat_n.output...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] netstat information is stored in /tmp/work1/20200512182119/netstat_n.output.mask and /tmp/work1/20200512182119/netstat_s.output
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Collecting systctl information...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] sysctl information is stored in /tmp/work1/20200512182119/etc/sysctl.conf
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid] Validating systctl information...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_somaxconn => 1024 is correct (recommendation is 1024)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_netdev_max_backlog => 5000 is correct (recommendation is 5000)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_rmem_max => 16777216 is correct (recommendation is 16777216)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_core_wmem_max => 16777216 is correct (recommendation is 16777216)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_wmem => ["4096", "12582912", "16777216"] is correct (recommendation is ["4096", "12582912", "16777216"])
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_rmem => ["4096", "12582912", "16777216"] is correct (recommendation is ["4096", "12582912", "16777216"])
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_max_syn_backlog => 8096 is correct (recommendation is 8096)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_slow_start_after_idle => 0 is correct (recommendation is 0)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_tw_reuse => 1 is correct (recommendation is 1)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_ip_local_port_range => ["10240", "65535"] is correct (recommendation is ["10240", "65535"])
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Collecting ulimit information...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] ulimit information is stored in /tmp/work1/20200512182119/ulimit_n.output
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid] Validating ulimit information...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Valid]    ulimit => 65536 is correct (recommendation is >65535)
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Masking td-agent config file : /tmp/work1/20200512182119/etc/td-agent/td-agent.conf...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Masking td-agent log file : /tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200508.gz...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Masking td-agent log file : /tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200509.gz...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Masking td-agent log file : /tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200507.gz...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Masking td-agent log file : /tmp/work1/20200512182119/var/log/td-agent/td-agent.log-20200512...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Masking td-agent log file : /tmp/work1/20200512182119/var/log/td-agent/td-agent.log...
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Mask] Export mask log file : ./mask_20200512182119.json
-2020-05-12 18:21:22 -0400: [Diagtool] [INFO] [Collect] Generate tar file /tmp/work1/diagout-20200512182119.tar.gz
+# fluent-diagtool -t fluentd -o /tmp -w passwd1,passwd2 -m yes
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] Parsing command options...
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO]    Option : Output directory = /tmp
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO]    Option : Mask = yes
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO]    Option : Word list = ["passwd1", "passwd2"]
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO]    Option : Hash Seed =
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] Initializing parameters...
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect] Loading the environment parameters...
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect]    operating system = CentOS Linux 7 (Core)
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect]    kernel version = Linux 3.10.0-1127.10.1.el7.x86_64
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect]    td-agent conf path = /etc/td-agent/
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect]    td-agent conf file = td-agent.conf
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect]    td-agent log path = /var/log/td-agent/
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect]    td-agent log = td-agent.log
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect] Collecting log files of td-agent...
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect] Collecting config file of td-agent...
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect] config file is stored in ["/tmp/20201007212928/etc/td-agent/td-agent.conf", "/tmp/20201007212928/etc/td-agent/http_fld_system.conf"]
+2020-10-07 21:29:28 +0000: [Diagtool] [INFO] [Collect] Collecting td-agent gem information...
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] td-agent gem information is stored in /tmp/20201007212928/output/tdgem_list.output
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] Collecting config file of OS log...
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Mask] Masking OS log file : /tmp/20201007212928/var/log/messages...
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] config file is stored in /tmp/20201007212928/var/log/messages.mask
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] Collecting date/time information...
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] date/time information is stored in /tmp/20201007212928/output/chronyc_sources.txt
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] Collecting command output : command = ps -eo pid,ppid,stime,time,%mem,%cpu,cmd
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Mask] Masking command output file : /tmp/20201007212928/output/ps_-eo_pid_ppid_stime_time_%mem_%cpu_cmd.txt...
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] Collecting command output ps stored in /tmp/20201007212928/output/ps_-eo_pid_ppid_stime_time_%mem_%cpu_cmd.txt.mask
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] Collecting command output : command = cat /proc/meminfo
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Mask] Masking command output file : /tmp/20201007212928/output/cat_-proc-meminfo.txt...
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] Collecting command output cat stored in /tmp/20201007212928/output/cat_-proc-meminfo.txt.mask
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Collect] Collecting command output : command = netstat -plan
+2020-10-07 21:29:29 +0000: [Diagtool] [INFO] [Mask] Masking command output file : /tmp/20201007212928/output/netstat_-plan.txt...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Collecting command output netstat stored in /tmp/20201007212928/output/netstat_-plan.txt.mask
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Collecting command output : command = netstat -s
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Mask] Masking command output file : /tmp/20201007212928/output/netstat_-s.txt...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Collecting command output netstat stored in /tmp/20201007212928/output/netstat_-s.txt.mask
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Collecting systctl information...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] sysctl information is stored in /tmp/20201007212928/output/sysctl_-a.txt
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid] Validating systctl information...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_core_netdev_max_backlog => 5000 is correct (recommendation is 5000)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_core_rmem_max => 16777216 is correct (recommendation is 16777216)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_core_somaxconn => 1024 is correct (recommendation is 1024)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_core_wmem_max => 16777216 is correct (recommendation is 16777216)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_ip_local_port_range => ["10240", "65535"] is correct (recommendation is ["10240", "65535"])
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_max_syn_backlog => 8096 is correct (recommendation is 8096)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_rmem => ["4096", "12582912", "16777216"] is correct (recommendation is ["4096", "12582912", "16777216"])
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_slow_start_after_idle => 0 is correct (recommendation is 0)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_tw_reuse => 1 is correct (recommendation is 1)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    Sysctl: net_ipv4_tcp_wmem => ["4096", "12582912", "16777216"] is correct (recommendation is ["4096", "12582912", "16777216"])
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Collecting ulimit information...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] ulimit information is stored in /tmp/20201007212928/output/sh_-c_'ulimit_-n'.txt
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid] Validating ulimit information...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Valid]    ulimit => 65536 is correct (recommendation is >65535)
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Mask] Masking td-agent config file : /tmp/20201007212928/etc/td-agent/td-agent.conf...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Mask] Masking td-agent config file : /tmp/20201007212928/etc/td-agent/http_fld_system.conf...
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Mask] Export mask log file : ./mask_20201007212928.json
+2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Generate tar file /tmp/diagout-20201007212928.tar.gz
 ```
 #### Mask Function
 When run diagtool with the mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each file.  
@@ -196,8 +199,6 @@ The diagtool provides a hash-seed option with '-s'. When hash-seed is specified,
 ```
 
 ## Tested Environment
-- OS : CentOS 8.1
-- Fluentd : td-agent version 3/4 
+- OS : CentOS 8.1 / Ubuntu 20.04
+- Fluentd : td-agent version 3/4
   https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3
-- Fluentbit : td-agent-bit
-
