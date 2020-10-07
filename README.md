@@ -97,20 +97,8 @@ The following example shows pre-check returns failure resulting Diagtool is not 
 ```
 
 ### Run diagtool
-
-#### The "@include" directive in td-agent configuration file
-The "@include" directive is a function to reuse configuration defined in other configuration files. The diagtool reads the td-agent configuration and collects the files described in "@include" directive as well. The details of "@include" directive are described in followed url:  
-https://docs.fluentd.org/configuration/config-file#6-re-use-your-config-the-include-directive
-
-#### User defined words to be masked 
-The user-defined words can be specified both -e option and -f option and the words are merged when both options are selected.
-The format of user-defined words list file specified in -f option should be followed format.
-```
-# cat word_list_sample
-centos8101
-centos8102
-```
-NOTE: When user specified the keywork, only the exact match words will be masked. For instance, when users like to mask words like "nginx1" and "nginx2", users need to specify "nginx1" and "nginx2" respectively and "nginx*" should not work in the tool.
+Once the pre-check is completed, you are ready to run the tool. The “-o” is mandatory out of provided options and the output will be generated as a compressed file under the directory specified by “-o“ option.
+(*) If the pre-check results mentioned that it is not able to find “td-agent conf path” and “td-agent log path“, you need to use “-c“ and “-l”  respectively to specify the file path manually.
 
 #### Command sample:
 ```
@@ -172,8 +160,23 @@ NOTE: When user specified the keywork, only the exact match words will be masked
 2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Mask] Export mask log file : ./mask_20201007212928.json
 2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Generate tar file /tmp/diagout-20201007212928.tar.gz
 ```
+
+#### The "@include" directive in td-agent configuration file
+The "@include" directive is a function to reuse configuration defined in other configuration files. Diagtool reads Fluentd configuration and gathers the files described in "@include" directive as well. The details of "@include" directive are described in followed page:  
+https://docs.fluentd.org/configuration/config-file#6-re-use-your-config-the-include-directive
+
+#### User defined words to be masked 
+The user-defined words can be specified both -e option and -f option and the words are merged when both options are selected.
+The format of user-defined words list file specified in -f option should be followed format.
+```
+# cat word_list_sample
+centos8101
+centos8102
+```
+NOTE: When user specified the keywork, only the exact match words will be masked. For instance, when users like to mask words like "nginx1" and "nginx2", users need to specify "nginx1" and "nginx2" respectively and "nginx*" should not work in the tool.
+
 #### Mask Function
-When run diagtool with the mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each file.  
+When run Diagtool with the mask option, the log of mask is also created in 'mask_{timestamp}.json' file. Users are able to confirm how the mask was generated on each file.  
 The diagtool provides a hash-seed option with '-s'. When hash-seed is specified, the mask will be generated with the original word and hash-seed so that users could use a unique mask value.
 #### Mask sample - IP address: IPv4_{md5hash}
 ```
