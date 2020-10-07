@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fluent-diagtool (0.1.10)
+    fluent-diagtool (1.0.0)
       fileutils
       json
 

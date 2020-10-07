@@ -27,7 +27,7 @@ params = {}
 OptionParser.new do |opt|
   opt.banner = "Usage: #{$0} -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {listfile} -s {hash seed}"
   opt.on('--precheck', 'Run Precheck (Optional)')
-  opt.on('-t','--type fluentd|fluentbit' 'Select the type of Fluentd (Mandatory)')
+  opt.on('-t','--type fluentd|fluentbit', String, 'Select the type of Fluentd (Mandatory)')
   opt.on('-o','--output DIR', String, 'Output directory (Mandatory)')
   opt.on('-m','--mask yes|no', String, 'Enable mask function (Optional : Default=no)')
   opt.on('-w','--word-list word1,word2', Array, 'Provide a list of user-defined words which will to be masked (Optional : Default=None)')
