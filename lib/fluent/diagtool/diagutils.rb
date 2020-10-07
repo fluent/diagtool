@@ -114,7 +114,6 @@ module Diagtool
 
       diaglogger_info("[Collect] Collecting config file of td-agent...")
       tdconf = c.collect_tdconf()
-      puts tdconf
       diaglogger_info("[Collect] config file is stored in #{tdconf}")
 
       diaglogger_info("[Collect] Collecting td-agent gem information...")
