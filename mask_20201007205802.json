@@ -1,0 +1,46 @@
+{
+  "/tmp/20201007205802/var/log/syslog": {
+    "Line5-12": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line10-12": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    },
+    "Line45-11": {
+      "original": "org.freedesktop.PackageKit",
+      "mask": "FQDN_5e86b9703ff2cb675e3fa7c02a100b92"
+    },
+    "Line48-10": {
+      "original": "org.freedesktop.PackageKit",
+      "mask": "FQDN_5e86b9703ff2cb675e3fa7c02a100b92"
+    },
+    "Line93-11": {
+      "original": "org.freedesktop.fwupd",
+      "mask": "FQDN_e74d0924b680426e5a36abb95bb9037f"
+    },
+    "Line97-10": {
+      "original": "org.freedesktop.fwupd",
+      "mask": "FQDN_e74d0924b680426e5a36abb95bb9037f"
+    },
+    "Line143-6": {
+      "original": "snapd.session-agent.socket",
+      "mask": "FQDN_848ac85bb6c39df146c82735fb2182eb"
+    },
+    "Line177-12": {
+      "original": "dbus-org.freedesktop.hostname1.service",
+      "mask": "FQDN_7d1ab90ac755456b54dd2130dbf1e125"
+    }
+  },
+  "/tmp/20201007205802/etc/td-agent-bit/td-agent-bit.conf": {
+    "Line40-6": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    },
+    "Line94-10": {
+      "original": "0.0.0.0",
+      "mask": "IPv4_f1f17934834ae2613699701054ef9684"
+    }
+  }
+}
