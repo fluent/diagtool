@@ -28,7 +28,7 @@ https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3-vs-v4
 
 ## Diagtool Installation
 
-When you are using td-agent, you can install Diagtool easily with /usr/sbin/td-agent-gem command.
+When you are using td-agent, you can install Diagtool easily with "/usr/sbin/td-agent-gem" command.
 ```
 # /usr/sbin/td-agent-gem install fluent-diagtool
 Successfully installed fluent-diagtool-1.0.0
@@ -37,6 +37,7 @@ Installing ri documentation for fluent-diagtool-1.0.0
 Done installing documentation for fluent-diagtool after 0 seconds
 1 gem installed
 ```
+When using /usr/sbin/td-agent-gem command, fluent-diagtool is installed under "/opt/td-agent/embedded/lib/ruby/gems/2.4.0/bin/" directory. You can add that directory to $PATH in .bash_profile.  
 
 Otherwise, you can install Diagtool with common gem command. In this case, Ruby version higher than 2.3 might be required to install.
 ```
