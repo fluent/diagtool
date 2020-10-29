@@ -30,7 +30,7 @@ https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3-vs-v4
 
 When you are using td-agent, you can install Diagtool easily with /usr/sbin/td-agent-gem command.
 ```
-# /usr/sbin/td-agent-gem install fluent-diagtool-1.0.0.gem
+# /usr/sbin/td-agent-gem install fluent-diagtool
 Successfully installed fluent-diagtool-1.0.0
 Parsing documentation for fluent-diagtool-1.0.0
 Installing ri documentation for fluent-diagtool-1.0.0
