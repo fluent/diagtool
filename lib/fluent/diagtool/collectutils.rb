@@ -240,7 +240,7 @@ module Diagtool
             end
             inc_list.push inc_http
           else
-            if l.start_with?(/\//)  # /tmp/work1/b.conf
+            if l.start_with?('/')  # /tmp/work1/b.conf
               if l.include?('*')
                 Dir.glob(l).each { |ll|
                   inc_conf = target_dir + ll.gsub(/\//,'-')
