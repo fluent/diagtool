@@ -36,7 +36,9 @@ module Diagtool
         'FLUENT_CONF' => '',
         'TD_AGENT_LOG_FILE' => ''
       }			
-      
+      @package_name = conf[:package_name]
+      @service_name = conf[:service_name]
+
       case @type
       when 'fluentd'
         _find_fluentd_info()
@@ -52,7 +54,7 @@ module Diagtool
           @tdconf = @tdenv['FLUENT_CONF'].split('/')[-1]
       	  @tdconf_path = @tdenv['FLUENT_CONF'].gsub(@tdconf,'')
 	else
-	  raise "The path of td-agent configuration file need to be specified."  if conf[:precheck] == false
+	  raise "The path of #{@package_name} configuration file need to be specified."  if conf[:precheck] == false
 	end
       end
       if not conf[:tdlog].empty?
@@ -62,10 +64,13 @@ module Diagtool
         if not @tdenv['TD_AGENT_LOG_FILE'].empty?
           @tdlog =  @tdenv['TD_AGENT_LOG_FILE'].split('/')[-1]
           @tdlog_path = @tdenv['TD_AGENT_LOG_FILE'].gsub(@tdlog,'')
+        elsif not @tdenv['FLUENT_PACKAGE_LOG_FILE'].empty?
+          @tdlog =  @tdenv['FLUENT_PACKAGE_LOG_FILE'].split('/')[-1]
+          @tdlog_path = @tdenv['FLUENT_PACKAGE_LOG_FILE'].gsub(@tdlog,'')
         else
           case @type
           when 'fluentd'
-            raise "The path of td-agent log file need to be specified." if conf[:precheck] == false
+            raise "The path of #{@package_name} log file need to be specified." if conf[:precheck] == false
           when 'fluentbit'
             @logger.warn("FluentBit logs are redirected to the standard output interface ")
           end
@@ -81,10 +86,10 @@ module Diagtool
       @logger.info("Loading the environment parameters...")
       @logger.info("    operating system = #{@osenv['Operating System']}")
       @logger.info("    kernel version = #{@osenv['Kernel']}")
-      @logger.info("    td-agent conf path = #{@tdconf_path}")
-      @logger.info("    td-agent conf file = #{@tdconf}")
-      @logger.info("    td-agent log path = #{@tdlog_path}")
-      @logger.info("    td-agent log = #{@tdlog}")
+      @logger.info("    #{@package_name} conf path = #{@tdconf_path}")
+      @logger.info("    #{@package_name} conf file = #{@tdconf}")
+      @logger.info("    #{@package_name} log path = #{@tdlog_path}")
+      @logger.info("    #{@package_name} log = #{@tdlog}")
     end
     
     def _find_os_info()
@@ -104,7 +109,7 @@ module Diagtool
     
     def _find_fluentd_info()
       ### check if the td-agent is run as daemon
-      stdout, stderr, status = Open3.capture3('systemctl cat td-agent')
+      stdout, stderr, status = Open3.capture3("systemctl cat #{@service_name}")
       if status.success?
         if @precheck == false  # SKip if precheck is true
           File.open(@outdir+'/td-agent_env.output', 'w') do |f|
@@ -400,7 +405,12 @@ module Diagtool
 
     def collect_tdgems()
       output = @outdir+'/tdgem_list.output'
-      stdout, stderr, status = Open3.capture3("td-agent-gem list | grep fluent")
+      command = if @package_name == "fluent-package"
+                  "fluent-gem"
+                else
+                  "td-agent-gem"
+                end
+      stdout, stderr, status = Open3.capture3("#{command} list | grep fluent")
       File.open(output, 'w') do |f|
         f.puts(stdout)
       end
