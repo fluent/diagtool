@@ -157,11 +157,11 @@ module Diagtool
       ###
       #  Correct information to be validated
       ###
-      diaglogger_info("[Collect] Collecting systctl information...")
+      diaglogger_info("[Collect] Collecting sysctl information...")
       sysctl = c.collect_cmd_output("sysctl -a")
       diaglogger_info("[Collect] sysctl information is stored in #{sysctl}")
 			
-      diaglogger_info("[Valid] Validating systctl information...")
+      diaglogger_info("[Valid] Validating sysctl information...")
       ret, sysctl = v.valid_sysctl(sysctl)
       list =  sysctl.keys
       list.each do |k|
