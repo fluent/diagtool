@@ -229,7 +229,7 @@ module Diagtool
           if Dir.exist?(params[:output])
             options[:basedir] = params[:output]
           else
-            raise "output directory '#{basedir}' does not exist"
+            raise "output directory '#{params[:output]}' does not exist"
           end
         else
           raise "output directory '-o' must be specified"
