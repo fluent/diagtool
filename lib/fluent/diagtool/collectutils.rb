@@ -365,7 +365,7 @@ module Diagtool
         FileUtils.cp(@oslog_path+@syslog, target_dir)
         return target_dir+@syslog
       else
-        @logger.warn("Can not find OS log file in #{oslog} or #{syslog}")
+        @logger.warn("Can not find OS log file in #{@oslog} or #{@syslog}")
       end
     end
 
