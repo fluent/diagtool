@@ -33,6 +33,13 @@ module Diagtool
 	      "netstat -plan",
 	      "netstat -s",
       ]
+      if fluent_package?
+        @conf[:package_name] = "fluent-package"
+        @conf[:service_name] = "fluentd"
+      else
+        @conf[:package_name] = "td-agent"
+        @conf[:service_name] = "td-agent"
+      end
     end
     
     def run_precheck()
@@ -46,16 +53,16 @@ module Diagtool
       prechecklog.info("[Precheck] Check OS parameters...")
       prechecklog.info("[Precheck]    operating system = #{c_env[:os]}")
       prechecklog.info("[Precheck]    kernel version = #{c_env[:kernel]}")
-      prechecklog.info("[Precheck] Check td-agent parameters...")
-      prechecklog.info("[Precheck]    td-agent conf path = #{c_env[:tdconf_path]}")
-      prechecklog.info("[Precheck]    td-agent conf file = #{c_env[:tdconf]}")
-      prechecklog.info("[Precheck]    td-agent log path = #{c_env[:tdlog_path]}")
-      prechecklog.info("[Precheck]    td-agent log = #{c_env[:tdlog]}")
+      prechecklog.info("[Precheck] Check #{@conf[:package_name]} parameters...")
+      prechecklog.info("[Precheck]    #{@conf[:package_name]} conf path = #{c_env[:tdconf_path]}")
+      prechecklog.info("[Precheck]    #{@conf[:package_name]} conf file = #{c_env[:tdconf]}")
+      prechecklog.info("[Precheck]    #{@conf[:package_name]} log path = #{c_env[:tdlog_path]}")
+      prechecklog.info("[Precheck]    #{@conf[:package_name]} log = #{c_env[:tdlog]}")
       if c_env[:tdconf_path] == nil || c_env[:tdconf] == nil
-        prechecklog.warn("[Precheck]    can not find td-agent conf path: please run diagtool command with -c /path/to/<td-agent conf file>")
+        prechecklog.warn("[Precheck]    can not find #{@conf[:package_name]} conf path: please run diagtool command with -c /path/to/<#{@conf[:package_name]} conf file>")
       end
       if c_env[:tdlog_path] == nil || c_env[:tdlog] == nil
-        prechecklog.warn("[Precheck]    can not find td-agent log path: please run diagtool command with -l /path/to/<td-agent log file>")
+        prechecklog.warn("[Precheck]    can not find #{@conf[:package_name]} log path: please run diagtool command with -l /path/to/<#{@conf[:package_name]} log file>")
       end
       if c_env[:tdconf_path] != nil && c_env[:tdconf] != nil && c_env[:tdlog_path] != nil && c_env[:tdlog] != nil
         prechecklog.info("[Precheck] Precheck completed. You can run diagtool command without -c and -l options")
@@ -90,35 +97,35 @@ module Diagtool
       diaglogger_info("[Collect] Loading the environment parameters...")
       diaglogger_info("[Collect]    operating system = #{c_env[:os]}")
       diaglogger_info("[Collect]    kernel version = #{c_env[:kernel]}")
-      diaglogger_info("[Collect]    td-agent conf path = #{c_env[:tdconf_path]}")
-      diaglogger_info("[Collect]    td-agent conf file = #{c_env[:tdconf]}")
-      diaglogger_info("[Collect]    td-agent log path = #{c_env[:tdlog_path]}")
-      diaglogger_info("[Collect]    td-agent log = #{c_env[:tdlog]}")
+      diaglogger_info("[Collect]    #{@conf[:package_name]} conf path = #{c_env[:tdconf_path]}")
+      diaglogger_info("[Collect]    #{@conf[:package_name]} conf file = #{c_env[:tdconf]}")
+      diaglogger_info("[Collect]    #{@conf[:package_name]} log path = #{c_env[:tdlog_path]}")
+      diaglogger_info("[Collect]    #{@conf[:package_name]} log = #{c_env[:tdlog]}")
       m = MaskUtils.new(@conf, loglevel)
       v = ValidUtils.new(loglevel)
 							
-      diaglogger_info("[Collect] Collecting log files of td-agent...")
+      diaglogger_info("[Collect] Collecting log files of #{@conf[:package_name]}...")
       case @type
       when 'fluentd'
         tdlog = c.collect_tdlog()
-        diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+        diaglogger_info("[Collect] log files of #{@conf[:package_name]} are stored in #{tdlog}")
       when 'fleuntbit'
         if tdlog.empty?
           diaglogger_info("FluentBit logs are redirected to the standard output interface ")
           tdlog = ''
         else
           tdlog = c.collect_tdlog()
-          diaglogger_info("[Collect] log files of td-agent are stored in #{tdlog}")
+          diaglogger_info("[Collect] log files of #{@conf[:package_name]} are stored in #{tdlog}")
         end
       end
 
-      diaglogger_info("[Collect] Collecting config file of td-agent...")
+      diaglogger_info("[Collect] Collecting config file of #{@conf[:package_name]}...")
       tdconf = c.collect_tdconf()
       diaglogger_info("[Collect] config file is stored in #{tdconf}")
 
-      diaglogger_info("[Collect] Collecting td-agent gem information...")
+      diaglogger_info("[Collect] Collecting #{@conf[:package_name]} gem information...")
       tdgem = c.collect_tdgems()
-      diaglogger_info("[Collect] td-agent gem information is stored in #{tdgem}")
+      diaglogger_info("[Collect] #{@conf[:package_name]} gem information is stored in #{tdgem}")
 
       diaglogger_info("[Collect] Collecting config file of OS log...")
       oslog = c.collect_oslog()
@@ -186,7 +193,7 @@ module Diagtool
 
       if @conf[:mask] == 'yes'
         tdconf.each { | file |
-          diaglogger_info("[Mask] Masking td-agent config file : #{file}...")
+          diaglogger_info("[Mask] Masking #{@conf[:package_name]} config file : #{file}...")
           m.mask_tdlog(file, clean = true)
         }
       end
@@ -194,7 +201,7 @@ module Diagtool
       if @conf[:mask] == 'yes'
         if tdlog != nil
           tdlog.each { | file |
-            diaglogger_info("[Mask] Masking td-agent log file : #{file}...")
+            diaglogger_info("[Mask] Masking #{@conf[:package_name]} log file : #{file}...")
             filename = file.split("/")[-1]
             if filename.include?(".gz")
               m.mask_tdlog_gz(file, clean = true)
@@ -312,6 +319,10 @@ module Diagtool
     def diaglogger_error(str)
       @logger.error(str)
       @logger_file.error(str)
+    end
+
+    def fluent_package?
+      File.exist?("/etc/fluent/fluentd.conf") || File.exist?("/opt/fluent/bin/fluentd")
     end
   end
 end
