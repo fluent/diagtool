@@ -205,4 +205,6 @@ The diagtool provides a hash-seed option with '-s'. When hash-seed is specified,
 ## Tested Environment
 - OS : CentOS 8.1 / Ubuntu 20.04
 - Fluentd : td-agent version 3/4
-  https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3
+  https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3-vs-v4
+- Fluentd : fluent-package version 5
+  https://docs.fluentd.org/quickstart/fluent-package-v5-vs-td-agent
