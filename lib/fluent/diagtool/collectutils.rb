@@ -403,9 +403,57 @@ module Diagtool
       return output
     end
 
+    def fluent_package?
+      @package_name == "fluent-package"
+    end
+
+    def match_platform?(platforms_option)
+      on_windows = /mingw/.match?(RUBY_PLATFORM)
+      if on_windows
+        platforms_option == "windows_platforms"
+      else
+        platforms_option == "not_windows_platforms"
+      end
+    end
+
+    def collect_bundled_plugins
+      gemfile_path = if fluent_package?
+                       "/opt/fluent/share/Gemfile"
+                     else
+                       "/opt/td-agent/share/Gemfile"
+                     end
+      File.read(gemfile_path).lines(chomp: true).grep(/\Agem "fluent-plugin-/).collect do |line|
+        gem_name = line[/\Agem "(fluent-plugin-.+?)"/, 1]
+        platforms_option = line[/platforms: (\w+)/, 1]
+        next gem_name, platforms_option
+      end.select do |gem_name, platforms_option|
+        platforms_option.nil? || match_platform?(platforms_option)
+      end.collect do |gem_name, platforms_option|
+        gem_name
+      end
+    end
+
+    def collect_manually_installed_gems(gemlist_path)
+      installed_gems = File.read(gemlist_path).lines(chomp: true).collect do |line|
+        line.split.first
+      end
+      bundled_plugins = collect_bundled_plugins
+      bundled_gem_path = File.join(@outdir, "gem_bundled_list.output")
+      File.open(bundled_gem_path, 'w') do |f|
+        f.puts(bundled_plugins.join("\n"))
+      end
+      local_gem_path = File.join(@outdir, "gem_local_list.output")
+      # the folloing gems are not collected as bundled plugins
+      masked_gems = ["fluentd", "fluent-config-regexp-type", "fluent-logger", "fluent-diagtool"]
+      File.open(local_gem_path, 'w') do |f|
+        f.puts((installed_gems - bundled_plugins - masked_gems).join("\n"))
+      end
+      return {:bundled => bundled_gem_path, :local => local_gem_path}
+    end
+
     def collect_tdgems()
       output = @outdir+'/tdgem_list.output'
-      command = if @package_name == "fluent-package"
+      command = if fluent_package?
                   "fluent-gem"
                 else
                   "td-agent-gem"

@@ -127,6 +127,17 @@ module Diagtool
       tdgem = c.collect_tdgems()
       diaglogger_info("[Collect] #{@conf[:package_name]} gem information is stored in #{tdgem}")
 
+      gem_info = c.collect_manually_installed_gems(tdgem)
+      diaglogger_info("[Collect] #{@conf[:package_name]} gem information (bundled by default) is stored in #{gem_info[:bundled]}")
+      diaglogger_info("[Collect] #{@conf[:package_name]} manually installed gem information is stored in #{gem_info[:local]}")
+      local_gems = File.read(gem_info[:local]).lines(chomp: true)
+      unless local_gems == [""]
+        diaglogger_info("[Collect] #{@conf[:package_name]} manually installed gems:")
+        local_gems.each do |gem|
+          diaglogger_info("[Collect]   * #{gem}")
+        end
+      end
+
       diaglogger_info("[Collect] Collecting config file of OS log...")
       oslog = c.collect_oslog()
       if @conf[:mask] == 'yes'
