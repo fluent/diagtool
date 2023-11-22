@@ -21,7 +21,8 @@ The scope of data collection:
 <br>   
 
 ## Prerequisite
-Diagtool has been developed for Fluentd(td-agent) and FluentBit(td-agent-bit) running on Linux OS and Diatool does not work for Windows.
+Diagtool has been developed for Fluentd(td-agent, fluent-package) and FluentBit(td-agent-bit) running on Linux OS, mainly.
+On Windows, it only supports the `installed td-agent-gem list` collection for Fluentd, currently (since v1.0.3).
 Diagtool is written in Ruby and Ruby version should be higher than 2.3 for the installation. 
 The supported Linux OS is described in the following page:  
 https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3-vs-v4
@@ -64,7 +65,13 @@ Usage: fluent-diagtool -o OUTPUT_DIR -m {yes | no} -w {word1,[word2...]} -f {lis
     -c, --conf config_file           provide a full path of td-agent configuration file (Optional : Default=None)
     -l, --log log_file               provide a full path of td-agent log file (Optional : Default=None)
 ```
+
+On Windows, only the `-o, --output DIR` option is supported.
+
 ### Precheck
+
+(Not supported on Windows)
+
 In order to run Diagtool correctly, it is required to ensure that Diagtool can obtain the fundamental information of Fluentd. Basically, Diagtool automatically parses the required information from the running Fluentd processes. The precheck option is useful to confirm if Diagtool certainly collects the information as expected. 
 The following output example shows the case where Diatool properly collects the required information.
 
@@ -162,6 +169,21 @@ Once the pre-check is completed, you are ready to run the tool. The “-o” is 
 2020-10-07 21:29:30 +0000: [Diagtool] [INFO] [Collect] Generate tar file /tmp/diagout-20201007212928.tar.gz
 ```
 
+fluent-package (td-agent) on Windows: Fluent Package Command Prompt (Td-agent Command Prompt) with Administrator privilege
+
+```
+$ fluent-diagtool -o /opt
+2023-11-21 12:46:08 +0900: [Diagtool] [INFO] Parsing command options...
+2023-11-21 12:46:08 +0900: [Diagtool] [INFO]    Option : Output directory = /opt
+2023-11-21 12:46:08 +0900: [Diagtool] [INFO] Initializing parameters...
+2023-11-21 12:46:08 +0900: [Diagtool] [INFO] [Collect] Collecting fluent-package gem information...
+2023-11-21 12:46:10 +0900: [Diagtool] [INFO] [Collect] fluent-package gem information is stored in /opt/20231121124608/output/tdgem_list.output
+2023-11-21 12:46:10 +0900: [Diagtool] [INFO] [Collect] fluent-package gem information (bundled by default) is stored in /opt/20231121124608/output/gem_bundled_list.output
+2023-11-21 12:46:10 +0900: [Diagtool] [INFO] [Collect] fluent-package manually installed gem information is stored in /opt/20231121124608/output/gem_local_list.output
+2023-11-21 12:46:10 +0900: [Diagtool] [INFO] [Collect] fluent-package manually installed gems:
+2023-11-21 12:46:10 +0900: [Diagtool] [INFO] [Collect]   * fluent-plugin-forest
+```
+
 #### The "@include" directive in td-agent configuration file
 The "@include" directive is a function to reuse configuration defined in other configuration files. Diagtool reads Fluentd configuration and gathers the files described in "@include" directive as well. The details of "@include" directive are described in followed page:  
 https://docs.fluentd.org/configuration/config-file#6-re-use-your-config-the-include-directive
@@ -203,7 +225,7 @@ The diagtool provides a hash-seed option with '-s'. When hash-seed is specified,
 ```
 
 ## Tested Environment
-- OS : CentOS 8.1 / Ubuntu 20.04
+- OS : CentOS 8.1 / Ubuntu 20.04 / Windows Home 10
 - Fluentd : td-agent version 3/4
   https://docs.fluentd.org/quickstart/td-agent-v2-vs-v3-vs-v4
 - Fluentd : fluent-package version 5
