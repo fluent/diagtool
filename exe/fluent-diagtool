@@ -17,9 +17,6 @@
 #
 
 require 'optparse'
-require 'fluent/diagtool/collectutils'
-require 'fluent/diagtool/maskutils'
-require 'fluent/diagtool/validutils'
 require 'fluent/diagtool/diagutils'
 include Diagtool
 

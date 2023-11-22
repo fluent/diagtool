@@ -19,9 +19,12 @@ require 'open3'
 require 'logger'
 require 'net/http'
 require 'uri'
+require 'fluent/diagtool/windows/collectutils' if Diagtool.windows?
 
 module Diagtool
   class CollectUtils
+    prepend Windows::PlatformSpecificCollectUtils if Diagtool.windows?
+
     def initialize(conf, log_level)
       @logger = Logger.new(STDOUT, level: log_level, formatter: proc {|severity, datetime, progname, msg|
         "#{datetime}: [Collectutils] [#{severity}] #{msg}\n"
@@ -34,8 +37,9 @@ module Diagtool
       @outdir = conf[:outdir]
       @tdenv = {
         'FLUENT_CONF' => '',
-        'TD_AGENT_LOG_FILE' => ''
-      }			
+        'TD_AGENT_LOG_FILE' => '',
+        'FLUENT_PACKAGE_LOG_FILE' => '',
+      }
       @package_name = conf[:package_name]
       @service_name = conf[:service_name]
 
@@ -408,8 +412,7 @@ module Diagtool
     end
 
     def match_platform?(platforms_option)
-      on_windows = /mingw/.match?(RUBY_PLATFORM)
-      if on_windows
+      if Diagtool.windows?
         platforms_option == "windows_platforms"
       else
         platforms_option == "not_windows_platforms"
@@ -458,9 +461,14 @@ module Diagtool
                 else
                   "td-agent-gem"
                 end
-      stdout, stderr, status = Open3.capture3("#{command} list | grep fluent")
+      stdout, stderr, status = Open3.capture3("#{command} list")
+      gems = stdout.each_line(chomp: true).select do |line|
+        line.include?("fluent")
+      end.collect do |line|
+        line.split.first
+      end
       File.open(output, 'w') do |f|
-        f.puts(stdout)
+        f.puts(gems.join("\n"))
       end
       return output
     end

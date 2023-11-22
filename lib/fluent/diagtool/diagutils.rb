@@ -14,15 +14,31 @@
 #    limitations under the License.
 #
 
+module Diagtool
+  ON_WINDOWS = /mingw/.match?(RUBY_PLATFORM)
+  def self.windows?
+    ON_WINDOWS
+  end
+end
+
 require 'logger'
 require 'fileutils'
 require 'fluent/diagtool/collectutils'
 require 'fluent/diagtool/maskutils'
 require 'fluent/diagtool/validutils'
+require 'fluent/diagtool/windows/diagutils' if Diagtool.windows?
 include Diagtool
 
 module Diagtool
   class DiagUtils
+    # TODO: Consider making the logic of this class more abstract and
+    # cutting out the unix-specific logic into a separate module as well.
+    # (Currently, very limited features are supported for Windows.
+    # In order to reduce impact on the existing logic for Unix-like.
+    # only Windows-specific logic is separated into the module, for now.
+    # In the future, the implementation of this class should be more abstract.)
+    prepend Windows::PlatformSpecificDiagUtils if Diagtool.windows?
+
     def initialize(params)
       time = Time.new
       @time_format = time.strftime("%Y%m%d%0k%M%0S")
