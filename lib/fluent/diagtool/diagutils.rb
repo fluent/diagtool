@@ -49,12 +49,20 @@ module Diagtool
 	      "netstat -plan",
 	      "netstat -s",
       ]
-      if fluent_package?
+      if @conf[:type].downcase == "fluentd" && fluent_package?
         @conf[:package_name] = "fluent-package"
         @conf[:service_name] = "fluentd"
       else
         @conf[:package_name] = "td-agent"
         @conf[:service_name] = "td-agent"
+      end
+
+      if @conf[:type].downcase == "fluentbit" && fluentbit_package?
+        @conf[:package_name] = "fluent-bit"
+        @conf[:service_name] = "fluent-bit"
+      else
+        @conf[:package_name] = "td-agent-bit"
+        @conf[:service_name] = "td-agent-bit"
       end
     end
     
@@ -139,19 +147,23 @@ module Diagtool
       tdconf = c.collect_tdconf()
       diaglogger_info("[Collect] config file is stored in #{tdconf}")
 
-      diaglogger_info("[Collect] Collecting #{@conf[:package_name]} gem information...")
-      tdgem = c.collect_tdgems()
-      diaglogger_info("[Collect] #{@conf[:package_name]} gem information is stored in #{tdgem}")
-
-      gem_info = c.collect_manually_installed_gems(tdgem)
-      diaglogger_info("[Collect] #{@conf[:package_name]} gem information (bundled by default) is stored in #{gem_info[:bundled]}")
-      diaglogger_info("[Collect] #{@conf[:package_name]} manually installed gem information is stored in #{gem_info[:local]}")
-      local_gems = File.read(gem_info[:local]).lines(chomp: true)
-      unless local_gems == [""]
-        diaglogger_info("[Collect] #{@conf[:package_name]} manually installed gems:")
-        local_gems.each do |gem|
-          diaglogger_info("[Collect]   * #{gem}")
+      case @type
+      when 'fluentd'
+        diaglogger_info("[Collect] Collecting #{@conf[:package_name]} gem information...")
+        tdgem = c.collect_tdgems()
+        diaglogger_info("[Collect] #{@conf[:package_name]} gem information is stored in #{tdgem}")
+        gem_info = c.collect_manually_installed_gems(tdgem)
+        diaglogger_info("[Collect] #{@conf[:package_name]} gem information (bundled by default) is stored in #{gem_info[:bundled]}")
+        diaglogger_info("[Collect] #{@conf[:package_name]} manually installed gem information is stored in #{gem_info[:local]}")
+        local_gems = File.read(gem_info[:local]).lines(chomp: true)
+        unless local_gems == [""]
+          diaglogger_info("[Collect] #{@conf[:package_name]} manually installed gems:")
+          local_gems.each do |gem|
+            diaglogger_info("[Collect]   * #{gem}")
+          end
         end
+      when 'fleuntbit'
+        # nothing to do!
       end
 
       diaglogger_info("[Collect] Collecting config file of OS log...")
@@ -350,6 +362,10 @@ module Diagtool
 
     def fluent_package?
       File.exist?("/etc/fluent/fluentd.conf") || File.exist?("/opt/fluent/bin/fluentd")
+    end
+
+    def fluentbit_package?
+      File.exist?("/etc/fluent-bit/fluent-bit.conf") || File.exist?("/opt/fluent-bit/bin/fluent-bit")
     end
   end
 end
