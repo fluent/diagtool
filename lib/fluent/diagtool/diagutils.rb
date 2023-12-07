@@ -147,7 +147,7 @@ module Diagtool
       tdconf = c.collect_tdconf()
       diaglogger_info("[Collect] config file is stored in #{tdconf}")
 
-      case @type
+      case @conf[:type]
       when 'fluentd'
         diaglogger_info("[Collect] Collecting #{@conf[:package_name]} gem information...")
         tdgem = c.collect_tdgems()
