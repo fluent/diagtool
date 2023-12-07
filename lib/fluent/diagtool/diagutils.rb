@@ -162,7 +162,7 @@ module Diagtool
             diaglogger_info("[Collect]   * #{gem}")
           end
         end
-      when 'fleuntbit'
+      when 'fluentbit'
         # nothing to do!
       end
 
