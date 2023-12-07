@@ -49,20 +49,22 @@ module Diagtool
 	      "netstat -plan",
 	      "netstat -s",
       ]
-      if @conf[:type].downcase == "fluentd" && fluent_package?
-        @conf[:package_name] = "fluent-package"
-        @conf[:service_name] = "fluentd"
+      if @conf[:type] == "fluentd"
+        if fluent_package?
+          @conf[:package_name] = "fluent-package"
+          @conf[:service_name] = "fluentd"
+        else
+          @conf[:package_name] = "td-agent"
+          @conf[:service_name] = "td-agent"
+        end
       else
-        @conf[:package_name] = "td-agent"
-        @conf[:service_name] = "td-agent"
-      end
-
-      if @conf[:type].downcase == "fluentbit" && fluentbit_package?
-        @conf[:package_name] = "fluent-bit"
-        @conf[:service_name] = "fluent-bit"
-      else
-        @conf[:package_name] = "td-agent-bit"
-        @conf[:service_name] = "td-agent-bit"
+        if fluentbit_package?
+          @conf[:package_name] = "fluent-bit"
+          @conf[:service_name] = "fluent-bit"
+        else
+          @conf[:package_name] = "td-agent-bit"
+          @conf[:service_name] = "td-agent-bit"
+        end
       end
     end
     
