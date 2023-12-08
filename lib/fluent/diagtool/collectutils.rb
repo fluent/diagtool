@@ -157,10 +157,11 @@ module Diagtool
     
     def _find_fluentbit_info()
       ### check if the td-agent-bit is run as daemon
-      stdout, stderr, status = Open3.capture3('systemctl cat td-agent-bit')
+
+      stdout, _stderr, status = Open3.capture3("systemctl cat #{@service_name}")
       if status.success?
         if @precheck == false  # SKip if precheck is true
-          File.open(@outdir+'/td-agent-bit_env.output', 'w') do |f|
+          File.open(@outdir+"/#{@service_name}_env.output", 'w') do |f|
             f.puts(stdout)
           end
         end
@@ -184,8 +185,8 @@ module Diagtool
           end
         end
       else
-        ### check if the td-agent-bit is not run as daemon or run FluentdBit with customized script 
-        stdout, stderr, status = Open3.capture3('ps aux | grep fluent-bit | grep -v ".*\(grep\|diagtool\)"')
+        ### check if the td-agent-bit is not run as daemon or run FluentdBit with customized script
+        stdout, _stderr, status = Open3.capture3('ps aux | grep fluent-bit | grep -v ".*\(grep\|diagtool\)"')
         if status.success?
           i = 0
           stdout.split().each do | line |
