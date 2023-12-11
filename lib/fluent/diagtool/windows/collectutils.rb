@@ -29,6 +29,14 @@ module Diagtool
         # Not supported yet.
         return {}
       end
+
+      def gemfile_path
+        if fluent_package?
+          File.join(ENV["FLUENT_PACKAGE_TOPDIR"], "share/Gemfile")
+        else
+          File.join(ENV["TD_AGENT_TOPDIR"], "share/Gemfile")
+        end
+      end
     end
   end
 end
