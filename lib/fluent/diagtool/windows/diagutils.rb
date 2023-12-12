@@ -21,6 +21,10 @@ require 'fluent/diagtool/collectutils'
 module Diagtool
   module Windows
     module PlatformSpecificDiagUtils
+      def fluent_package?
+        ENV.key?("FLUENT_PACKAGE_TOPDIR")
+      end
+
       def run_precheck()
         raise "[Precheck] Precheck feature is not supported on Windows."
       end

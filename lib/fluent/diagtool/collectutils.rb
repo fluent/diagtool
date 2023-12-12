@@ -420,12 +420,15 @@ module Diagtool
       end
     end
 
+    def gemfile_path
+      if fluent_package?
+        "/opt/fluent/share/Gemfile"
+      else
+        "/opt/td-agent/share/Gemfile"
+      end
+    end
+
     def collect_bundled_plugins
-      gemfile_path = if fluent_package?
-                       "/opt/fluent/share/Gemfile"
-                     else
-                       "/opt/td-agent/share/Gemfile"
-                     end
       File.read(gemfile_path).lines(chomp: true).grep(/\Agem "fluent-plugin-/).collect do |line|
         gem_name = line[/\Agem "(fluent-plugin-.+?)"/, 1]
         platforms_option = line[/platforms: (\w+)/, 1]
