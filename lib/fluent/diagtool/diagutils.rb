@@ -207,16 +207,18 @@ module Diagtool
       ###
       diaglogger_info("[Collect] Collecting sysctl information...")
       sysctl = c.collect_cmd_output("sysctl -a")
-      diaglogger_info("[Collect] sysctl information is stored in #{sysctl}")
-			
-      diaglogger_info("[Valid] Validating sysctl information...")
-      ret, sysctl = v.valid_sysctl(sysctl)
-      list =  sysctl.keys
-      list.each do |k|
-        if sysctl[k]['result'] == 'correct'
-          diaglogger_info("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is correct (recommendation is #{sysctl[k]['recommend']})")
-        elsif sysctl[k]['result'] == 'incorrect'
-          diaglogger_warn("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is incorrect (recommendation is #{sysctl[k]['recommend']})")
+      if sysctl
+        diaglogger_info("[Collect] sysctl information is stored in #{sysctl}")
+
+        diaglogger_info("[Valid] Validating sysctl information...")
+        ret, sysctl = v.valid_sysctl(sysctl)
+        list =  sysctl.keys
+        list.each do |k|
+          if sysctl[k]['result'] == 'correct'
+            diaglogger_info("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is correct (recommendation is #{sysctl[k]['recommend']})")
+          elsif sysctl[k]['result'] == 'incorrect'
+            diaglogger_warn("[Valid]    Sysctl: #{k} => #{sysctl[k]['value']} is incorrect (recommendation is #{sysctl[k]['recommend']})")
+          end
         end
       end
 
