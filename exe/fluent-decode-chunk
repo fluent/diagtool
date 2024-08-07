@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+#
+#
+# Fluentd
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+
+require 'optparse'
+require 'fluent/diagtool/version'
+require 'fluent/diagtool/decodeutils'
+
+params = {}
+OptionParser.new do |opt|
+  opt.banner = "Usage: #{$0}"
+  opt.on('-d','--decode-chunk-id ID', String, 'Decode given chunk id') do |v|
+    params[:decode_chunk_id] = v
+  end
+  opt.on('-b','--backup-dir BACKUP_DIR', String, 'Decode given chunk id under BACKUP_DIR') do |v|
+    params[:backup_dir] = v
+  end
+  opt.on('-v','--version', nil, 'Show version')
+end.parse!(into: params)
+
+if params[:version]
+  puts "fluent-decode-chunk #{Fluent::Diagtool::VERSION}"
+  exit 0
+end
+
+decoder = Diagtool::DecodeUtils.new
+decoder.run(params)
